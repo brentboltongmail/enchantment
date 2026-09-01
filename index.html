@@ -1154,6 +1154,351 @@
         opacity: 0.7;
       }
       .venue-close-btn:hover { opacity: 1; }
+
+      /* Harbor Docking Challenge Radar HUD */
+      #docking-hud {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: rgba(8, 20, 36, 0.94);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid #00ff88;
+        border-radius: 20px;
+        padding: 14px 24px;
+        z-index: 1100;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.65), 0 0 25px rgba(0, 255, 136, 0.3);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        min-width: 360px;
+      }
+      #docking-hud.visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateX(-50%) translateY(0);
+      }
+      .docking-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        padding-bottom: 6px;
+      }
+      .docking-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #00ff88;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .docking-status-tag {
+        font-size: 10px;
+        font-weight: 800;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(0, 255, 136, 0.2);
+        color: #00ff88;
+        border: 1px solid rgba(0, 255, 136, 0.4);
+      }
+      .docking-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+      }
+      .docking-stat-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 6px 8px;
+        text-align: center;
+      }
+      .docking-stat-lbl {
+        font-size: 9px;
+        color: #8bbce8;
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .docking-stat-val {
+        font-size: 14px;
+        font-weight: 800;
+        color: #ffffff;
+        margin-top: 2px;
+      }
+      .docking-alignment-bar {
+        position: relative;
+        width: 100%;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .docking-alignment-center {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 2px;
+        height: 100%;
+        background: #00ff88;
+        transform: translateX(-50%);
+        z-index: 2;
+      }
+      .docking-alignment-pip {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        width: 12px;
+        border-radius: 3px;
+        background: #00ddff;
+        transform: translateX(-50%);
+        transition: left 0.1s ease;
+      }
+
+      /* Docking Score Evaluation Modal */
+      .docking-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 2500;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      .docking-modal.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .docking-card {
+        background: rgba(10, 24, 42, 0.96);
+        border: 2px solid #00ff88;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 255, 136, 0.4);
+        border-radius: 24px;
+        padding: 30px;
+        text-align: center;
+        max-width: 480px;
+        width: 90vw;
+        position: relative;
+        z-index: 10;
+      }
+      .docking-rank-badge {
+        font-size: 38px;
+        margin-bottom: 6px;
+      }
+      .docking-rank-title {
+        font-size: 22px;
+        font-weight: 800;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+      }
+      .docking-score-display {
+        font-size: 48px;
+        font-weight: 900;
+        color: #00ff88;
+        margin: 10px 0;
+        font-family: monospace;
+        text-shadow: 0 0 20px rgba(0, 255, 136, 0.6);
+      }
+      .docking-score-breakdown {
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin: 14px 0;
+        font-size: 12px;
+        text-align: left;
+        color: #cde2f8;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .docking-btn-row {
+        display: flex;
+        gap: 10px;
+        margin-top: 18px;
+      }
+      .docking-btn {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        border: none;
+        transition: all 0.2s ease;
+      }
+      .docking-btn.primary {
+        background: linear-gradient(135deg, #00bb66, #00dd88);
+        color: #000;
+      }
+      .docking-btn.primary:hover {
+        box-shadow: 0 0 16px #00ff88;
+        transform: scale(1.03);
+      }
+      .docking-btn.secondary {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+      }
+      .docking-btn.secondary:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Treasure Hunt & Floating Souvenirs System */
+      .treasure-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 2000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+      }
+      .treasure-modal.active {
+        opacity: 1;
+        visibility: visible;
+      }
+      .treasure-modal-content {
+        position: relative;
+        z-index: 10;
+        width: 90vw;
+        max-width: 960px;
+        height: 84vh;
+        max-height: 720px;
+        background: rgba(10, 22, 38, 0.96);
+        border: 1px solid rgba(255, 200, 0, 0.45);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 180, 0, 0.25);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .treasure-header {
+        padding: 16px 24px;
+        background: rgba(24, 36, 56, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .treasure-header-left h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .treasure-subtitle {
+        font-size: 12px;
+        color: #ffd066;
+        margin-top: 3px;
+      }
+      .treasure-body {
+        flex: 1;
+        padding: 20px 24px;
+        overflow-y: auto;
+      }
+      .treasure-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 14px;
+      }
+      .treasure-card {
+        background: rgba(16, 30, 50, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 14px;
+        padding: 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        transition: all 0.2s ease;
+      }
+      .treasure-card.collected {
+        border-color: #ffcc00;
+        background: rgba(25, 42, 68, 0.9);
+        box-shadow: 0 4px 18px rgba(255, 204, 0, 0.15);
+      }
+      .treasure-card.locked {
+        opacity: 0.55;
+        filter: grayscale(0.6);
+      }
+      .treasure-icon {
+        font-size: 32px;
+        width: 52px;
+        height: 52px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        flex-shrink: 0;
+      }
+      .treasure-info {
+        flex: 1;
+      }
+      .treasure-name {
+        font-size: 14px;
+        font-weight: 700;
+        color: #ffffff;
+      }
+      .treasure-loc {
+        font-size: 11px;
+        color: #00ddff;
+        margin-top: 2px;
+        font-weight: 600;
+      }
+      .treasure-note {
+        font-size: 11px;
+        color: #c0deff;
+        margin-top: 5px;
+        line-height: 1.35;
+      }
+
+      /* Treasure Pickup Toast Banner */
+      #treasure-banner {
+        position: fixed;
+        top: 135px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-20px);
+        background: rgba(14, 28, 48, 0.95);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid #ffcc00;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(255, 204, 0, 0.4);
+        padding: 12px 24px;
+        border-radius: 24px;
+        z-index: 1600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: none;
+      }
+      #treasure-banner.visible {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+      .tbanner-icon { font-size: 24px; }
+      .tbanner-text { display: flex; flex-direction: column; }
+      .tbanner-title { font-size: 14px; font-weight: 700; color: #ffd700; }
+      .tbanner-desc { font-size: 11px; color: #cde2f8; }
     </style>
   </head>
   <body>
@@ -1260,12 +1605,90 @@
     <!-- Toolbar Buttons (Stacked Down the Right Side) -->
     <div id="toolbar">
       <button id="btn-horn" class="hud-btn horn-btn" title="Blast Ship Horn (Press 'H')">📯 (H)orn</button>
+      <button id="btn-docking" class="hud-btn" style="background: linear-gradient(135deg, rgba(0, 200, 100, 0.55), rgba(0, 140, 70, 0.55)); border-color: rgba(0, 255, 150, 0.65); color: #fff; font-weight: 700;" title="Harbor Docking Mini-Game (Press 'D')">⚓ (D)ocking</button>
+      <button id="btn-treasures" class="hud-btn" style="background: linear-gradient(135deg, rgba(255, 190, 0, 0.5), rgba(210, 130, 0, 0.5)); border-color: rgba(255, 220, 50, 0.65); color: #fff; font-weight: 700;" title="View Collected Souvenirs (Press 'U')">🪙 So(u)venirs (<span id="treasure-count">0/12</span>)</button>
       <button id="btn-roster" class="hud-btn" style="background: linear-gradient(135deg, rgba(255, 130, 0, 0.45), rgba(220, 70, 0, 0.45)); border-color: rgba(255, 180, 60, 0.6); color: #fff; font-weight: 700;" title="Guest Directory (Press 'R')">👥 (R)oster</button>
       <button id="btn-map" class="hud-btn" style="background: linear-gradient(135deg, rgba(0, 160, 220, 0.45), rgba(0, 100, 180, 0.45)); border-color: rgba(0, 221, 255, 0.5); color: #ffffff; font-weight: 700;" title="Cruise Map (Press 'M')">🗺 (M)ap</button>
       <button id="btn-cam-mode" class="hud-btn" title="Camera Angles (Press 'C')">🎥 (C)amera</button>
       <button id="btn-atmo" class="hud-btn" title="Time of Day (Press 'T')">☀️ (T)ime: Noon</button>
       <button id="btn-rotate" class="hud-btn active" title="Auto-Rotate (Press 'O')">🔄 (O)rbit</button>
       <button id="btn-stop-engines" class="hud-btn" style="background: linear-gradient(135deg, rgba(220, 20, 60, 0.55), rgba(160, 10, 30, 0.55)); border-color: rgba(255, 80, 80, 0.65); color: #fff; font-weight: 700;" title="Stop Engines (Press 'X')">🛑 (X) Stop</button>
+    </div>
+
+    <!-- Harbor Docking Radar HUD -->
+    <div id="docking-hud">
+      <div class="docking-title-row">
+        <span class="docking-title">⚓ HARBOR DOCKING RADAR</span>
+        <span id="docking-status-tag" class="docking-status-tag">APPROACHING</span>
+      </div>
+      <div class="docking-stats-grid">
+        <div class="docking-stat-card">
+          <div class="docking-stat-lbl">Pier Distance</div>
+          <div id="dock-dist-val" class="docking-stat-val">120 m</div>
+        </div>
+        <div class="docking-stat-card">
+          <div class="docking-stat-lbl">Alignment</div>
+          <div id="dock-angle-val" class="docking-stat-val">0.0°</div>
+        </div>
+        <div class="docking-stat-card">
+          <div class="docking-stat-lbl">Speed / Drift</div>
+          <div id="dock-speed-val" class="docking-stat-val">0.0 kts</div>
+        </div>
+      </div>
+      <div style="font-size: 10px; color: #8bbce8; display: flex; justify-content: space-between; margin-top: 2px;">
+        <span>Parallel Alignment Guide:</span>
+        <span id="dock-align-text" style="color: #00ff88; font-weight: bold;">OPTIMAL</span>
+      </div>
+      <div class="docking-alignment-bar">
+        <div class="docking-alignment-center"></div>
+        <div id="dock-alignment-pip" class="docking-alignment-pip" style="left: 50%;"></div>
+      </div>
+    </div>
+
+    <!-- Master Captain Docking Score Modal -->
+    <div id="docking-modal" class="docking-modal">
+      <div class="roster-modal-backdrop" id="docking-backdrop"></div>
+      <div class="docking-card">
+        <div id="dock-rank-badge" class="docking-rank-badge">🌟</div>
+        <div id="dock-rank-title" class="docking-rank-title">MASTER CAPTAIN</div>
+        <div id="dock-score-val" class="docking-score-display">96 PTS</div>
+        <div id="dock-rank-desc" style="font-size: 13px; color: #79ffb8; margin-bottom: 12px;">Flawless parallel docking with zero hull scrape!</div>
+        <div class="docking-score-breakdown">
+          <div>📐 Alignment Angle: <strong id="dock-score-align" style="color:#00ffcc;">34 / 35 pts</strong> (Parallel within 2.1°)</div>
+          <div>⚡ Touchdown Velocity: <strong id="dock-score-speed" style="color:#00ffcc;">33 / 35 pts</strong> (Gentle 1.1 kts)</div>
+          <div>🎯 Pier Center Placement: <strong id="dock-score-center" style="color:#00ffcc;">29 / 30 pts</strong> (Centered on bollards)</div>
+        </div>
+        <div class="docking-btn-row">
+          <button id="btn-dock-retry" class="docking-btn primary">🔄 Dock Again</button>
+          <button id="btn-dock-close" class="docking-btn secondary">🚢 Resume Cruise</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Treasure Pickup Notification Toast -->
+    <div id="treasure-banner">
+      <div class="tbanner-icon" id="tbanner-icon">🪙</div>
+      <div class="tbanner-text">
+        <div id="tbanner-title" class="tbanner-title">Souvenir Collected!</div>
+        <div id="tbanner-desc" class="tbanner-desc">You found a special cruise treasure!</div>
+      </div>
+    </div>
+
+    <!-- Floating Souvenir / Treasure Collection Gallery Modal -->
+    <div id="treasure-modal" class="treasure-modal">
+      <div class="roster-modal-backdrop" id="treasure-backdrop"></div>
+      <div class="treasure-modal-content">
+        <div class="treasure-header">
+          <div class="treasure-header-left">
+            <h2>🪙 Caribbean Treasure Hunt &amp; Floating Souvenirs</h2>
+            <div class="treasure-subtitle">Sail across the Western Caribbean to collect all 12 hidden treasures &amp; Bolton crew secrets!</div>
+          </div>
+          <button id="btn-close-treasures" class="map-close-btn">&times;</button>
+        </div>
+        <div class="treasure-body">
+          <div class="treasure-grid" id="treasure-grid"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Passenger Cabin Directory / Guest Roster Modal -->
@@ -1345,6 +1768,13 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- Instructions HUD -->
+    <div id="instructions">
+      <div><span class="key-tag">▲</span> / <span class="key-tag">W</span> Faster &bull; <span class="key-tag">▼</span> / <span class="key-tag">S</span> Slower &bull; <span class="key-tag">◄</span> <span class="key-tag">►</span> Steer &bull; <span class="key-tag">X</span> Stop</div>
+      <div style="opacity: 0.6;">|</div>
+      <div><span class="key-tag">H</span> Horn &bull; <span class="key-tag">D</span> Docking &bull; <span class="key-tag">U</span> Souvenirs &bull; <span class="key-tag">C</span> Camera &bull; <span class="key-tag">M</span> Map</div>
     </div>
 
     <!-- Import Maps -->
@@ -6218,6 +6648,360 @@
       }
 
       // ==========================================
+      // 8.6. HARBOR DOCKING CHALLENGE MINI-GAME
+      // ==========================================
+      let isDockingChallengeActive = false;
+      let dockingCompleted = false;
+      let dockingCheckCooldown = 0;
+
+      const dockingHud = document.getElementById("docking-hud");
+      const dockDistVal = document.getElementById("dock-dist-val");
+      const dockAngleVal = document.getElementById("dock-angle-val");
+      const dockSpeedVal = document.getElementById("dock-speed-val");
+      const dockAlignText = document.getElementById("dock-align-text");
+      const dockAlignmentPip = document.getElementById("dock-alignment-pip");
+      const dockingStatusTag = document.getElementById("docking-status-tag");
+
+      const dockingModal = document.getElementById("docking-modal");
+      const dockingBackdrop = document.getElementById("docking-backdrop");
+      const btnDockRetry = document.getElementById("btn-dock-retry");
+      const btnDockClose = document.getElementById("btn-dock-close");
+      const btnDocking = document.getElementById("btn-docking");
+
+      function startDockingChallenge() {
+        isDockingChallengeActive = true;
+        dockingCompleted = false;
+        dockingCheckCooldown = 0;
+
+        // Position vessel 520m out on the approach channel heading towards Tampa Cruise Terminal 2/3
+        shipGroup.position.set(520, 0, -45);
+        shipState.heading = 0.0; // Facing -X (West) parallel to the pier
+        shipState.speed = 6.5;
+        shipState.targetSpeed = 6.5;
+        shipState.rudder = 0;
+        shipState.turnRate = 0;
+
+        // Switch to third-person Stern Follow camera for precise harbor pilot view
+        setCameraMode(1); // Stern Follow
+        if (dockingHud) dockingHud.classList.add("visible");
+        if (dockingModal) dockingModal.classList.remove("active");
+
+        showArrivalBanner("⚓ Harbor Docking Challenge Initiated!", "Maneuver parallel to Tampa Pier & touch down under 2.5 kts without scraping!");
+      }
+
+      function evaluateDockingPerformance() {
+        if (dockingCompleted) return;
+        dockingCompleted = true;
+
+        // Target docking position: X: 0, Z: 52 (parallel to concrete quay at Z = 95)
+        const headingDeg = Math.abs((shipState.heading * (180 / Math.PI)) % 360);
+        const normAngle = Math.min(headingDeg, Math.abs(360 - headingDeg));
+        const absSpeed = Math.abs(shipState.speed);
+        const distFromCenter = Math.abs(shipGroup.position.x);
+
+        // Calculate Scores
+        const alignScore = Math.max(0, Math.round(35 * Math.max(0, 1 - (normAngle / 12))));
+        const speedScore = Math.max(0, Math.round(35 * Math.max(0, 1 - (absSpeed / 2.8))));
+        const centerScore = Math.max(0, Math.round(30 * Math.max(0, 1 - (distFromCenter / 140))));
+        const totalScore = Math.min(100, alignScore + speedScore + centerScore);
+
+        // Grade Ranks
+        let rankBadge = "🌟";
+        let rankTitle = "MASTER CAPTAIN (Gold Tier)";
+        let rankDesc = "Flawless parallel harbor docking! Smooth touchdown with zero hull scrape.";
+
+        if (totalScore >= 90) {
+          rankBadge = "🌟";
+          rankTitle = "MASTER CAPTAIN (Gold Tier)";
+          rankDesc = "Flawless parallel harbor docking! Smooth touchdown with zero hull scrape.";
+        } else if (totalScore >= 75) {
+          rankBadge = "🥈";
+          rankTitle = "SENIOR HARBOR PILOT (Silver Tier)";
+          rankDesc = "Great approach and secure lines! Clean mooring with good alignment.";
+        } else if (totalScore >= 55) {
+          rankBadge = "🥉";
+          rankTitle = "FIRST OFFICER (Bronze Tier)";
+          rankDesc = "Safe dock, but watch your approach speed and rudder alignment angle.";
+        } else {
+          rankBadge = "⚠️";
+          rankTitle = "HARBOR TUG ASSIST NEEDED";
+          rankDesc = "Approach was too fast or misaligned. Retrying will sharpen your captain skills!";
+        }
+
+        // Update Modal DOM
+        document.getElementById("dock-rank-badge").textContent = rankBadge;
+        document.getElementById("dock-rank-title").textContent = rankTitle;
+        document.getElementById("dock-score-val").textContent = `${totalScore} PTS`;
+        document.getElementById("dock-rank-desc").textContent = rankDesc;
+        document.getElementById("dock-score-align").textContent = `${alignScore} / 35 pts (Angle: ${normAngle.toFixed(1)}°)`;
+        document.getElementById("dock-score-speed").textContent = `${speedScore} / 35 pts (Touchdown: ${absSpeed.toFixed(1)} kts)`;
+        document.getElementById("dock-score-center").textContent = `${centerScore} / 30 pts (Offset: ${distFromCenter.toFixed(0)} m)`;
+
+        // Sound celebratory fanfare, blast horn, and launch fireworks on high scores!
+        if (totalScore >= 70) {
+          shipHorn.blast(3.2);
+          launchGrandBarrage(5);
+        }
+        playArrivalChime();
+
+        setTimeout(() => {
+          if (dockingModal) dockingModal.classList.add("active");
+        }, 600);
+      }
+
+      function updateDockingHUD() {
+        if (!dockingHud) return;
+
+        // Tampa Pier is located along Z = 95, length X: -450 to 450
+        const quayZ = 95;
+        const hullEdgeZ = shipGroup.position.z + 24.5;
+        const pierDist = Math.max(0, quayZ - hullEdgeZ);
+        const inApproachZone = (shipGroup.position.x >= -500 && shipGroup.position.x <= 750 && shipGroup.position.z >= -250 && shipGroup.position.z <= 200);
+
+        if (inApproachZone || isDockingChallengeActive) {
+          dockingHud.classList.add("visible");
+        } else {
+          dockingHud.classList.remove("visible");
+          return;
+        }
+
+        const headingDeg = Math.abs((shipState.heading * (180 / Math.PI)) % 360);
+        const normAngle = Math.min(headingDeg, Math.abs(360 - headingDeg));
+        const absSpeed = Math.abs(shipState.speed);
+
+        if (dockDistVal) dockDistVal.textContent = `${pierDist.toFixed(1)} m`;
+        if (dockAngleVal) dockAngleVal.textContent = `${normAngle.toFixed(1)}°`;
+        if (dockSpeedVal) dockSpeedVal.textContent = `${absSpeed.toFixed(1)} kts`;
+
+        // Update alignment guide bar
+        const alignOffset = Math.max(-45, Math.min(45, (shipState.heading * (180 / Math.PI)) * 3.5));
+        if (dockAlignmentPip) {
+          dockAlignmentPip.style.left = `${50 + alignOffset}%`;
+        }
+
+        if (normAngle <= 3.5) {
+          if (dockAlignText) { dockAlignText.textContent = "OPTIMAL PARALLEL"; dockAlignText.style.color = "#00ff88"; }
+        } else if (normAngle <= 8.5) {
+          if (dockAlignText) { dockAlignText.textContent = "ACCEPTABLE"; dockAlignText.style.color = "#00ddff"; }
+        } else {
+          if (dockAlignText) { dockAlignText.textContent = "MISALIGNED (CORRECT RUDDER)"; dockAlignText.style.color = "#ff4466"; }
+        }
+
+        // Check for successful touchdown / rest in docking box
+        if (pierDist <= 32 && Math.abs(shipGroup.position.x) <= 160) {
+          if (dockingStatusTag) {
+            dockingStatusTag.textContent = "TOUCHDOWN ZONE";
+            dockingStatusTag.style.background = "rgba(0, 255, 204, 0.25)";
+            dockingStatusTag.style.color = "#00ffcc";
+          }
+          if (absSpeed <= 0.65) {
+            dockingCheckCooldown++;
+            if (dockingCheckCooldown > 45) {
+              evaluateDockingPerformance();
+            }
+          } else {
+            dockingCheckCooldown = 0;
+          }
+        } else {
+          if (dockingStatusTag) {
+            dockingStatusTag.textContent = isDockingChallengeActive ? "APPROACHING PIER" : "HARBOR PROXIMITY";
+            dockingStatusTag.style.background = "rgba(0, 255, 136, 0.2)";
+            dockingStatusTag.style.color = "#00ff88";
+          }
+          dockingCheckCooldown = 0;
+        }
+      }
+
+      if (btnDocking) btnDocking.addEventListener("click", startDockingChallenge);
+      if (btnDockRetry) btnDockRetry.addEventListener("click", startDockingChallenge);
+      if (btnDockClose) btnDockClose.addEventListener("click", () => {
+        if (dockingModal) dockingModal.classList.remove("active");
+        isDockingChallengeActive = false;
+      });
+      if (dockingBackdrop) dockingBackdrop.addEventListener("click", () => {
+        if (dockingModal) dockingModal.classList.remove("active");
+      });
+
+      // ==========================================
+      // 8.7. TREASURE HUNT & FLOATING SOUVENIRS SYSTEM
+      // ==========================================
+      const TREASURE_ITEMS = [
+        { id: "tampa_wheel", name: "Gasparilla Golden Ship Wheel", icon: "🪙", x: -2800, z: 20, loc: "Tampa Bay Channel", desc: "Legendary pirate gold from the Gasparilla invasion of Tampa Bay!", clue: "Found floating near the Sunshine Skyway bridge channel." },
+        { id: "sea_bottle_1", name: "Message in a Bottle: Midnight Buffet", icon: "🍾", x: -14200, z: 21500, loc: "Gulf of Mexico", desc: "Note reads: 'Secret tip: The warm chocolate melting cake at Windjammer is unmatched!'", clue: "Cruising south across the Gulf of Mexico on Sea Day 1." },
+        { id: "lost_luggage", name: "Vintage Floral Cruise Suitcase", icon: "🧳", x: -16500, z: 24800, loc: "Straits of Yucatan", desc: "Uncle Dave's missing suitcase filled with Hawaiian shirts and sunscreen!", clue: "Floating in deep water near the entrance to Yucatan Straits." },
+        { id: "coconut_drink", name: "Bahama Mama Coconut Cocktail", icon: "🍹", x: -22000, z: 32000, loc: "Caribbean Sea", desc: "Chilled tropical rum cocktail with fresh pineapple and paper umbrella!", clue: "Sailing south past the western tip of Cuba." },
+        { id: "belize_mask", name: "Great Blue Hole Snorkel Mask", icon: "🤿", x: -30800, z: 56800, loc: "Belize City Harbor", desc: "Crystal-clear diving mask for exploring the UNESCO World Heritage Barrier Reef.", clue: "Floating near the Baron Bliss lighthouse in Belize City." },
+        { id: "mayan_jade", name: "Belizean Jade Turtle Medallion", icon: "🐢", x: -32200, z: 58200, loc: "Barrier Reef Cays", desc: "Hand-carved ancient Mayan green jade amulet granting smooth sailing.", clue: "Tucked inside the shallow barrier reef flats east of Belize." },
+        { id: "cozumel_turtle", name: "Cozumel Coral Sea Turtle Token", icon: "🐢", x: -24200, z: 40800, loc: "Cozumel Approach", desc: "Commemorative token from the world-famous Palancar & Columbia coral reefs.", clue: "Floating near the cruise ship pier approach in Cozumel." },
+        { id: "fiesta_maracas", name: "Mexican Fiesta Maracas", icon: "🪇", x: -24900, z: 42100, loc: "San Miguel Waterfront", desc: "Hand-painted musical maracas for dancing at the Caribbean Deck Gala!", clue: "Near the colorful waterfront of San Miguel de Cozumel." },
+        { id: "roatan_sloth", name: "Roatan Island Sloth Plushie", icon: "🦥", x: -21800, z: 63200, loc: "Roatan Mahogany Bay", desc: "Adorable souvenir sloth from the lush green hillside sanctuaries of Roatan!", clue: "Floating near the shipwreck reef off the coast of Roatan." },
+        { id: "sun_stone", name: "Golden Mayan Sun Stone", icon: "☀️", x: -28200, z: 50200, loc: "Puerto Costa Maya", desc: "Radiant golden artifact honoring the ancient Mayan sun deity Kinich Ahau.", clue: "Floating along the long concrete cruise pier in Costa Maya." },
+        { id: "steel_drum", name: "Steel Pan Calypso Drum Voucher", icon: "🥁", x: -8500, z: 12000, loc: "Florida Straits", desc: "VIP backstage pass for the ship's live poolside Caribbean steel band show!", clue: "Cruising north through the Straits of Florida on Sea Day 2." },
+        { id: "bolton_crown", name: "Bolton Family Cruise MVP Crown", icon: "👑", x: -350, z: -140, loc: "Tampa Port Return", desc: "The grand champion crown for the ultimate Bolton family cruise adventurer!", clue: "Waiting in the Tampa home port turning basin as we complete the voyage!" }
+      ];
+
+      function getCollectedTreasures() {
+        try {
+          const stored = localStorage.getItem("bolton_cruise_treasures_2027");
+          if (stored) return new Set(JSON.parse(stored));
+        } catch (e) {}
+        return new Set();
+      }
+
+      function saveCollectedTreasures(set) {
+        try {
+          localStorage.setItem("bolton_cruise_treasures_2027", JSON.stringify(Array.from(set)));
+        } catch (e) {}
+      }
+
+      const collectedTreasures = getCollectedTreasures();
+      const treasureGroup = new THREE.Group();
+      scene.add(treasureGroup);
+
+      // Create 3D Meshes for each floating souvenir
+      const treasureMeshes = [];
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xffcc00, emissive: 0xffaa00, emissiveIntensity: 0.6, metalness: 0.8, roughness: 0.2 });
+      const glassBottleMat = new THREE.MeshPhysicalMaterial({ color: 0x00dd88, transmission: 0.85, roughness: 0.1, thickness: 1.2 });
+      const jewelMat = new THREE.MeshStandardMaterial({ color: 0x00ffff, emissive: 0x0088ff, emissiveIntensity: 0.8, roughness: 0.1 });
+
+      TREASURE_ITEMS.forEach((item, idx) => {
+        const itemObj = new THREE.Group();
+        itemObj.position.set(item.x, 0, item.z);
+        itemObj.userData = { id: item.id, item: item, basePos: new THREE.Vector3(item.x, 0, item.z) };
+
+        // Floating Item Core Geometry
+        let coreGeo;
+        if (item.icon === "🪙" || item.icon === "👑") coreGeo = new THREE.TorusGeometry(3.5, 1.2, 16, 24);
+        else if (item.icon === "🍾") coreGeo = new THREE.CylinderGeometry(1.2, 1.6, 7.0, 12);
+        else if (item.icon === "🤿" || item.icon === "🐢") coreGeo = new THREE.IcosahedronGeometry(3.2, 1);
+        else coreGeo = new THREE.BoxGeometry(4.8, 3.8, 4.8);
+
+        const mesh = new THREE.Mesh(coreGeo, (item.icon === "🍾" ? glassBottleMat : (item.icon === "🪙" || item.icon === "👑" || item.icon === "☀️" ? goldMat : jewelMat)));
+        itemObj.add(mesh);
+
+        // Vertical glowing light beacon beam (visible from afar)
+        const beamGeo = new THREE.CylinderGeometry(0.8, 2.5, 95, 12);
+        beamGeo.translate(0, 47.5, 0);
+        const beamMat = new THREE.MeshBasicMaterial({
+          color: 0xffdd44,
+          transparent: true,
+          opacity: 0.45,
+          side: THREE.DoubleSide,
+          depthWrite: false
+        });
+        const beamMesh = new THREE.Mesh(beamGeo, beamMat);
+        itemObj.add(beamMesh);
+
+        // Sparkling water beacon ring
+        const ringGeo = new THREE.RingGeometry(4.5, 7.0, 24);
+        ringGeo.rotateX(-Math.PI / 2);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffbb00, side: THREE.DoubleSide, transparent: true, opacity: 0.8 });
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        itemObj.add(ringMesh);
+
+        treasureGroup.add(itemObj);
+        treasureMeshes.push(itemObj);
+      });
+
+      function updateTreasureCountDisplay() {
+        const countEl = document.getElementById("treasure-count");
+        if (countEl) countEl.textContent = `${collectedTreasures.size}/${TREASURE_ITEMS.length}`;
+      }
+      updateTreasureCountDisplay();
+
+      let treasureToastTimeout = null;
+      function showTreasurePickupBanner(item) {
+        const banner = document.getElementById("treasure-banner");
+        const iconEl = document.getElementById("tbanner-icon");
+        const titleEl = document.getElementById("tbanner-title");
+        const descEl = document.getElementById("tbanner-desc");
+
+        if (!banner) return;
+        if (iconEl) iconEl.textContent = item.icon;
+        if (titleEl) titleEl.textContent = `🪙 Souvenir Collected: ${item.name}!`;
+        if (descEl) descEl.textContent = `${item.loc} • "${item.desc}"`;
+
+        banner.classList.add("visible");
+        playArrivalChime();
+
+        if (treasureToastTimeout) clearTimeout(treasureToastTimeout);
+        treasureToastTimeout = setTimeout(() => {
+          banner.classList.remove("visible");
+        }, 6000);
+      }
+
+      function collectTreasure(item, meshObj) {
+        if (collectedTreasures.has(item.id)) return;
+        collectedTreasures.add(item.id);
+        saveCollectedTreasures(collectedTreasures);
+        updateTreasureCountDisplay();
+
+        // Spawn gold sparkle firework pop over water
+        triggerBeatBurst(1.4, meshObj.position.x - shipGroup.position.x, meshObj.position.z - shipGroup.position.z, [0xffcc00, 0xffffff, 0x00ffff], 55, "double_strobe");
+
+        // Hide collected beacon
+        meshObj.visible = false;
+        showTreasurePickupBanner(item);
+      }
+
+      function renderTreasureModal() {
+        const grid = document.getElementById("treasure-grid");
+        if (!grid) return;
+        grid.innerHTML = "";
+
+        TREASURE_ITEMS.forEach((item) => {
+          const isCollected = collectedTreasures.has(item.id);
+          const card = document.createElement("div");
+          card.className = `treasure-card ${isCollected ? 'collected' : 'locked'}`;
+
+          card.innerHTML = `
+            <div class="treasure-icon">${isCollected ? item.icon : "🔒"}</div>
+            <div class="treasure-info">
+              <div class="treasure-name">${isCollected ? item.name : "Undiscovered Souvenir"}</div>
+              <div class="treasure-loc">📍 ${item.loc}</div>
+              <div class="treasure-note">${isCollected ? item.desc : `💡 Clue: ${item.clue}`}</div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      }
+
+      const treasureModal = document.getElementById("treasure-modal");
+      const treasureBackdrop = document.getElementById("treasure-backdrop");
+      const btnTreasures = document.getElementById("btn-treasures");
+      const btnCloseTreasures = document.getElementById("btn-close-treasures");
+
+      function openTreasures() {
+        renderTreasureModal();
+        if (treasureModal) treasureModal.classList.add("active");
+      }
+      function closeTreasures() {
+        if (treasureModal) treasureModal.classList.remove("active");
+      }
+
+      if (btnTreasures) btnTreasures.addEventListener("click", openTreasures);
+      if (btnCloseTreasures) btnCloseTreasures.addEventListener("click", closeTreasures);
+      if (treasureBackdrop) treasureBackdrop.addEventListener("click", closeTreasures);
+
+      // Hide already collected treasure items on start
+      treasureMeshes.forEach((meshObj) => {
+        if (collectedTreasures.has(meshObj.userData.id)) {
+          meshObj.visible = false;
+        }
+      });
+
+      // Update hotkeys: [D] Docking Challenge, [U] Souvenirs
+      window.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT") return;
+        if (e.code === "KeyD" || e.key === "d" || e.key === "D") {
+          startDockingChallenge();
+        } else if (e.code === "KeyU" || e.key === "u" || e.key === "U") {
+          if (treasureModal && treasureModal.classList.contains("active")) closeTreasures();
+          else openTreasures();
+        }
+      });
+
+      // ==========================================
       // 9. LAND COLLISION & GRACEFUL SHORELINE DEFLECTION SYSTEM
       // ==========================================
       const LAND_OBSTACLES = [
@@ -7181,6 +7965,29 @@
             activeExplosions.splice(i, 1);
           }
         }
+
+        // ----------------------------------------
+        // Animate Floating Souvenirs & Proximity Pickup Detection
+        // ----------------------------------------
+        for (let i = 0; i < treasureMeshes.length; i++) {
+          const tMesh = treasureMeshes[i];
+          if (!tMesh.visible) continue;
+
+          // Gentle bobbing atop ocean waves
+          const itemPos = tMesh.userData.basePos;
+          const waterH = getWaterHeight(itemPos.x, itemPos.z, t);
+          tMesh.position.y = waterH + 1.2 + Math.sin(t * 2.8 + i) * 0.45;
+          tMesh.rotation.y = t * 1.6;
+
+          // Proximity detection to cruise ship hull (radius 48 units)
+          const distToShip = Math.hypot(tMesh.position.x - shipGroup.position.x, tMesh.position.z - shipGroup.position.z);
+          if (distToShip < 48.0) {
+            collectTreasure(tMesh.userData.item, tMesh);
+          }
+        }
+
+        // Update Harbor Docking Radar & Score Tracking
+        updateDockingHUD();
 
         controls.update();
         renderer.render(scene, camera);
