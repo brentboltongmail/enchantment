@@ -6094,16 +6094,38 @@
       const navArrowGroup = new THREE.Group();
       scene.add(navArrowGroup);
 
-      // Glowing 3D Navigation Arrow Pointer (Tapered Chevron / Cone)
-      const navArrowGeo = new THREE.ConeGeometry(5.2, 18.0, 4);
-      navArrowGeo.rotateX(Math.PI / 2); // Point forward along local -Z
-      const navArrowMat = new THREE.MeshBasicMaterial({
+      // Glowing 3D Navigation Arrow Pointer (High-Visibility 3D Chevron Arrow)
+      const arrowShape = new THREE.Shape();
+      arrowShape.moveTo(0, 11.0); // Pointed tip
+      arrowShape.lineTo(5.0, -7.0); // Right wing tip
+      arrowShape.lineTo(2.0, -4.5); // Right inner notch
+      arrowShape.lineTo(2.0, -10.0); // Stem right
+      arrowShape.lineTo(-2.0, -10.0); // Stem left
+      arrowShape.lineTo(-2.0, -4.5); // Left inner notch
+      arrowShape.lineTo(-5.0, -7.0); // Left wing tip
+      arrowShape.closePath();
+
+      const navArrowGeo = new THREE.ExtrudeGeometry(arrowShape, {
+        depth: 2.2,
+        bevelEnabled: true,
+        bevelSegments: 2,
+        steps: 1,
+        bevelSize: 0.6,
+        bevelThickness: 0.6
+      });
+      navArrowGeo.center();
+      // Rotate around X so that tip (+Y in 2D shape) points along local -Z (Three.js lookAt forward vector)
+      navArrowGeo.rotateX(Math.PI / 2);
+
+      const navArrowMat = new THREE.MeshStandardMaterial({
         color: 0x00ff88,
-        transparent: true,
-        opacity: 0.88,
-        depthWrite: false
+        emissive: 0x00ff88,
+        emissiveIntensity: 0.85,
+        roughness: 0.2,
+        metalness: 0.1
       });
       const navArrowMesh = new THREE.Mesh(navArrowGeo, navArrowMat);
+      navArrowMesh.scale.setScalar(0.9);
       navArrowGroup.add(navArrowMesh);
 
       // Outer Navigational Compass Beacon Ring
