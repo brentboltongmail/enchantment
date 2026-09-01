@@ -239,37 +239,43 @@
         transition: left 0.1s ease;
       }
 
-      /* Toolbar Buttons */
+      /* Toolbar Buttons - Stacked Down the Right Side */
       #toolbar {
         position: absolute;
         top: 24px;
         right: 24px;
-        z-index: 10;
+        z-index: 20;
         display: flex;
-        gap: 10px;
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
       }
       .hud-btn {
-        background: rgba(12, 24, 41, 0.7);
+        background: rgba(12, 24, 41, 0.78);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.18);
         color: #e0eeff;
-        padding: 9px 15px;
+        padding: 9px 16px;
         border-radius: 12px;
         font-size: 12px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
+        text-align: left;
+        white-space: nowrap;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
       }
       .hud-btn:hover {
         background: rgba(30, 60, 100, 0.9);
         border-color: rgba(255, 255, 255, 0.35);
-        transform: translateY(-1px);
+        transform: translateX(-3px);
       }
       .hud-btn.active {
         background: #0077ff;
         border-color: #55aaff;
         color: white;
+        box-shadow: 0 0 14px rgba(0, 119, 255, 0.5);
       }
 
       /* Instructions HUD */
@@ -1151,15 +1157,15 @@
       </div>
     </div>
 
-    <!-- Toolbar Buttons -->
+    <!-- Toolbar Buttons (Stacked Down the Right Side) -->
     <div id="toolbar">
-      <button id="btn-horn" class="hud-btn horn-btn" title="Blast Ship Horn (Press 'H')">📯 Ship Horn</button>
-      <button id="btn-roster" class="hud-btn" style="background: linear-gradient(135deg, rgba(255, 130, 0, 0.45), rgba(220, 70, 0, 0.45)); border-color: rgba(255, 180, 60, 0.6); color: #fff; font-weight: 700;">👥 Guest Roster</button>
-      <button id="btn-map" class="hud-btn" style="background: linear-gradient(135deg, rgba(0, 160, 220, 0.45), rgba(0, 100, 180, 0.45)); border-color: rgba(0, 221, 255, 0.5); color: #ffffff; font-weight: 700;">🗺 Cruise Map</button>
-      <button id="btn-cam-mode" class="hud-btn">🌐 Free Orbit</button>
-      <button id="btn-atmo" class="hud-btn" title="Change Time of Day">☀️ Noon</button>
-      <button id="btn-rotate" class="hud-btn active">Auto-Rotate</button>
-      <button id="btn-reset" class="hud-btn">Reset View</button>
+      <button id="btn-horn" class="hud-btn horn-btn" title="Blast Ship Horn (Press 'H')">📯 (H)orn</button>
+      <button id="btn-roster" class="hud-btn" style="background: linear-gradient(135deg, rgba(255, 130, 0, 0.45), rgba(220, 70, 0, 0.45)); border-color: rgba(255, 180, 60, 0.6); color: #fff; font-weight: 700;" title="Guest Directory (Press 'R')">👥 (R)oster</button>
+      <button id="btn-map" class="hud-btn" style="background: linear-gradient(135deg, rgba(0, 160, 220, 0.45), rgba(0, 100, 180, 0.45)); border-color: rgba(0, 221, 255, 0.5); color: #ffffff; font-weight: 700;" title="Cruise Map (Press 'M')">🗺 (M)ap</button>
+      <button id="btn-cam-mode" class="hud-btn" title="Camera Angles (Press 'C')">🎥 (C)amera</button>
+      <button id="btn-atmo" class="hud-btn" title="Time of Day (Press 'T')">☀️ (T)ime: Noon</button>
+      <button id="btn-rotate" class="hud-btn active" title="Auto-Rotate (Press 'O')">🔄 (O)rbit</button>
+      <button id="btn-reset" class="hud-btn" title="Reset View (Press 'X')">⏮ (X) Reset</button>
     </div>
 
     <!-- 3D Deck Venue Hotspot Card -->
@@ -1252,9 +1258,7 @@
 
     <!-- Instructions -->
     <div id="instructions">
-      <div><span class="key-tag">▲</span> / <span class="key-tag">W</span> Faster &bull; <span class="key-tag">▼</span> / <span class="key-tag">S</span> Slower &bull; <span class="key-tag">◄</span> <span class="key-tag">►</span> Steer</div>
-      <div style="opacity: 0.6;">|</div>
-      <div><span class="key-tag">H</span> Horn &bull; <span class="key-tag">C</span> Camera &bull; <span class="key-tag">M</span> Map &bull; Drag to Orbit</div>
+      <div><span class="key-tag">▲</span> Faster &bull; <span class="key-tag">▼</span> Slower &bull; <span class="key-tag">◄</span> <span class="key-tag">►</span> Steer</div>
     </div>
 
     <script type="importmap">
@@ -5394,11 +5398,29 @@
       mapBackdrop.addEventListener("click", closeMap);
 
       window.addEventListener("keydown", (e) => {
-        if (e.code === "KeyM" || e.key === "m" || e.key === "M") {
+        if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+        const code = e.code;
+        const key = e.key ? e.key.toLowerCase() : "";
+
+        if (code === "KeyM" || key === "m") {
           if (mapModal.classList.contains("active")) closeMap();
           else openMap();
+        } else if (code === "KeyH" || key === "h") {
+          shipHorn.blast(2.6);
+        } else if (code === "KeyC" || key === "c") {
+          setCameraMode(currentCamIdx + 1);
+        } else if (code === "KeyR" || key === "r") {
+          if (typeof rosterModal !== "undefined" && rosterModal.classList.contains("active")) closeRoster();
+          else openRoster();
+        } else if (code === "KeyT" || key === "t" || code === "KeyA" || key === "a") {
+          if (btnAtmo) btnAtmo.click();
+        } else if (code === "KeyO" || key === "o") {
+          if (btnRotate) btnRotate.click();
+        } else if (code === "KeyX" || key === "x") {
+          if (btnReset) btnReset.click();
         } else if (e.code === "Escape") {
           closeMap();
+          if (typeof closeRoster === "function") closeRoster();
         }
       });
 
@@ -5645,11 +5667,11 @@
 
       // 4. Multi-View Camera Controller (5 Angles: Orbit, Follow, Bridge, Bow, Pool Deck)
       const CAMERA_MODES = [
-        { name: "🌐 Free Orbit", id: "orbit" },
-        { name: "🎥 Stern Follow", id: "follow" },
-        { name: "⚓ Bridge Wing", id: "bridge" },
-        { name: "🚢 Bow Tip Cam", id: "bow" },
-        { name: "🍹 Pool Deck", id: "pool" }
+        { name: "🌐 (C)amera: Orbit", id: "orbit" },
+        { name: "🎥 (C)amera: Follow", id: "follow" },
+        { name: "⚓ (C)amera: Bridge", id: "bridge" },
+        { name: "🚢 (C)amera: Bow", id: "bow" },
+        { name: "🍹 (C)amera: Pool", id: "pool" }
       ];
       let currentCamIdx = 0;
 
@@ -5697,10 +5719,10 @@
 
       // 5. Time-of-Day / Atmosphere Presets (Noon, Sunset, Twilight, Midnight)
       const ATMO_PRESETS = [
-        { name: "☀️ Noon", sky: 0x7bbbe3, fog: 0x7bbbe3, sun: 1.6, ambient: 0.85, isNight: false },
-        { name: "🌅 Sunset", sky: 0xff6a4d, fog: 0xdd4b39, sun: 1.2, ambient: 0.70, isNight: false },
-        { name: "🌆 Twilight", sky: 0x2e1b4e, fog: 0x1d1138, sun: 0.5, ambient: 0.45, isNight: true },
-        { name: "🎆 Midnight", sky: 0x060c18, fog: 0x060c18, sun: 0.2, ambient: 0.35, isNight: true }
+        { name: "☀️ (T)ime: Noon", sky: 0x7bbbe3, fog: 0x7bbbe3, sun: 1.6, ambient: 0.85, isNight: false },
+        { name: "🌅 (T)ime: Sunset", sky: 0xff6a4d, fog: 0xdd4b39, sun: 1.2, ambient: 0.70, isNight: false },
+        { name: "🌆 (T)ime: Twilight", sky: 0x2e1b4e, fog: 0x1d1138, sun: 0.5, ambient: 0.45, isNight: true },
+        { name: "🎆 (T)ime: Midnight", sky: 0x060c18, fog: 0x060c18, sun: 0.2, ambient: 0.35, isNight: true }
       ];
       let atmoPresetIdx = 0;
       const btnAtmo = document.getElementById("btn-atmo");
