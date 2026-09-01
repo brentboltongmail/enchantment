@@ -2343,10 +2343,15 @@
       const woodDeckTex = loadSeamlessTexture("./textures/wood_deck.jpg", 12, 12);
       const jungleTex = loadSeamlessTexture("./textures/jungle.jpg", 30, 30);
       const rockTex = loadSeamlessTexture("./textures/mountain_rock.jpg", 16, 16);
-      const skyscraperTex = loadSeamlessTexture("./textures/skyscraper_facade.jpg", 6, 14);
       const containerTex = loadSeamlessTexture("./textures/container_ribs.jpg", 2, 2);
       const terracottaTex = loadSeamlessTexture("./textures/terracotta_tiles.jpg", 6, 6);
       const palmBarkTex = loadSeamlessTexture("./textures/palm_bark.jpg", 1, 6);
+
+      // High-Fidelity Architectural Skyscraper & High-Rise Textures
+      const skyBlueTex = loadSeamlessTexture("./textures/skyscraper_blue.jpg", 4, 8);
+      const skyTealTex = loadSeamlessTexture("./textures/skyscraper_teal.jpg", 4, 8);
+      const towerStoneTex = loadSeamlessTexture("./textures/tower_stone.jpg", 3, 6);
+      const darkGlassTex = loadSeamlessTexture("./textures/dark_glass.jpg", 4, 8);
 
       // Shared Architectural Port & City Materials (High-Fidelity PBR with AI Textures)
       const concretePierMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xe0e6ed, roughness: 0.7, metalness: 0.15 });
@@ -2365,8 +2370,8 @@
       const terminalFacadeMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xf4f6f8, roughness: 0.35 });
       const terminalBlueRoofMat = new THREE.MeshStandardMaterial({ color: 0x0277bd, roughness: 0.28, metalness: 0.35 });
       const terminalNavyMat = new THREE.MeshStandardMaterial({ color: 0x01579b, roughness: 0.3, metalness: 0.4 });
-      const glassWindowMat = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x80d8ff, roughness: 0.08, metalness: 0.88, transparent: true, opacity: 0.8 });
-      const glassAquaMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, roughness: 0.08, metalness: 0.9, transparent: true, opacity: 0.8 });
+      const glassWindowMat = new THREE.MeshStandardMaterial({ map: skyBlueTex, color: 0xffffff, roughness: 0.1, metalness: 0.25, transparent: true, opacity: 0.85 });
+      const glassAquaMat = new THREE.MeshStandardMaterial({ map: skyTealTex, color: 0xffffff, roughness: 0.1, metalness: 0.25, transparent: true, opacity: 0.85 });
       const roadAsphaltMat = new THREE.MeshStandardMaterial({ map: asphaltTex, color: 0xffffff, roughness: 0.88 });
       const curbConcreteMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xd0d0d0, roughness: 0.7 });
       
@@ -2399,13 +2404,13 @@
       const thatchPalapaMat = new THREE.MeshStandardMaterial({ map: grassTex, color: 0x8d6e63, roughness: 0.95 });
       const lighthouseRedMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.35 });
       
-      // Skyscraper Materials
-      const skyGlassCyan = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x1565c0, roughness: 0.12, metalness: 0.92 });
-      const skyGlassTeal = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x00838f, roughness: 0.12, metalness: 0.88 });
-      const skyStoneMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xe8eaf6, roughness: 0.45 });
-      const skyDarkMat = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x1c2529, roughness: 0.35, metalness: 0.5 });
-      const skyGoldCrownMat = new THREE.MeshStandardMaterial({ color: 0xffd54f, roughness: 0.22, metalness: 0.88 });
-      const skywayYellowMat = new THREE.MeshStandardMaterial({ color: 0xfbc02d, roughness: 0.35, metalness: 0.65 });
+      // Skyscraper & High-Rise Building Materials
+      const skyGlassCyan = new THREE.MeshStandardMaterial({ map: skyBlueTex, color: 0xffffff, roughness: 0.22, metalness: 0.2 });
+      const skyGlassTeal = new THREE.MeshStandardMaterial({ map: skyTealTex, color: 0xffffff, roughness: 0.22, metalness: 0.2 });
+      const skyStoneMat = new THREE.MeshStandardMaterial({ map: towerStoneTex, color: 0xffffff, roughness: 0.45, metalness: 0.1 });
+      const skyDarkMat = new THREE.MeshStandardMaterial({ map: darkGlassTex, color: 0xffffff, roughness: 0.25, metalness: 0.2 });
+      const skyGoldCrownMat = new THREE.MeshStandardMaterial({ color: 0xffd54f, roughness: 0.25, metalness: 0.65 });
+      const skywayYellowMat = new THREE.MeshStandardMaterial({ color: 0xfbc02d, roughness: 0.35, metalness: 0.4 });
       const terracottaRoofMat = new THREE.MeshStandardMaterial({ map: terracottaTex, color: 0xffffff, roughness: 0.72 });
       const villaWallMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xfffde7, roughness: 0.6 });
       const yachtHullMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
