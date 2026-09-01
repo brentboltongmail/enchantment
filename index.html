@@ -3047,52 +3047,79 @@
         tampaPortGroup.add(tug);
       });
 
-      // --- K. MEGA-SCALE SUNSHINE SKYWAY BRIDGE WITH DOLPHIN CRASH ISLANDS ---
-      // 7km span spanning Tampa Bay mouth, 190m tall pylons, 62m roadway clearance!
+      // --- K. MEGA-SCALE SUNSHINE SKYWAY BRIDGE WITH ARCHED NAVIGATION SPAN ---
+      // 7.2km span across Tampa Bay mouth, 220m tall pylons, 96m roadway clearance in main channel!
       const skywayGroup = new THREE.Group();
       skywayGroup.position.set(-5500, 0, 0);
 
-      // Main Roadway Deck (7,000m span across Tampa Bay mouth)
-      const skyDeck = new THREE.Mesh(new THREE.BoxGeometry(64, 6, 7000), concretePierMat);
-      skyDeck.position.set(0, 62, 0);
-      skywayGroup.add(skyDeck);
+      function getSkywayDeckHeight(z) {
+        const normZ = Math.min(1.0, Math.abs(z) / 3600);
+        return 22 + 74 * Math.cos(normZ * Math.PI * 0.5);
+      }
 
-      // Asphalt Roadway Surface & Center Median Barrier
-      const skyRoad = new THREE.Mesh(new THREE.BoxGeometry(56, 1.2, 7000), roadAsphaltMat);
-      skyRoad.position.set(0, 65.5, 0);
-      skywayGroup.add(skyRoad);
+      // Arched Roadway Deck built with connected segments (peaks at Y = 96m in center)
+      const DECK_SEGS = 48;
+      const zMin = -3600, zMax = 3600;
+      const dz = (zMax - zMin) / DECK_SEGS;
 
-      const skyMedian = new THREE.Mesh(new THREE.BoxGeometry(4, 2, 7000), concretePierMat);
-      skyMedian.position.set(0, 66.5, 0);
-      skywayGroup.add(skyMedian);
+      for (let s = 0; s < DECK_SEGS; s++) {
+        const z0 = zMin + s * dz;
+        const z1 = z0 + dz;
+        const zMid = (z0 + z1) * 0.5;
+        const y0 = getSkywayDeckHeight(z0);
+        const y1 = getSkywayDeckHeight(z1);
+        const yMid = (y0 + y1) * 0.5;
+        const dy = y1 - y0;
+        const segLen = Math.sqrt(dz * dz + dy * dy);
+        const tiltX = Math.atan2(dy, dz);
 
-      // Approach Piers / Bents along the causeway outside the main cable-stayed channel
-      for (let pz = -3400; pz <= 3400; pz += 160) {
-        if (Math.abs(pz) < 450) continue; // Keep main navigation channel clear
-        const pierBent = new THREE.Mesh(new THREE.BoxGeometry(16, 60, 16), concretePierMat);
-        pierBent.position.set(0, 30, pz);
+        // Concrete Deck Box
+        const deckSeg = new THREE.Mesh(new THREE.BoxGeometry(64, 5.5, segLen + 0.6), concretePierMat);
+        deckSeg.position.set(0, yMid, zMid);
+        deckSeg.rotation.x = tiltX;
+        skywayGroup.add(deckSeg);
+
+        // Asphalt Roadway
+        const roadSeg = new THREE.Mesh(new THREE.BoxGeometry(56, 1.2, segLen + 0.6), roadAsphaltMat);
+        roadSeg.position.set(0, yMid + 3.0, zMid);
+        roadSeg.rotation.x = tiltX;
+        skywayGroup.add(roadSeg);
+
+        // Center Barrier
+        const medianSeg = new THREE.Mesh(new THREE.BoxGeometry(3.5, 2.0, segLen + 0.6), concretePierMat);
+        medianSeg.position.set(0, yMid + 4.0, zMid);
+        medianSeg.rotation.x = tiltX;
+        skywayGroup.add(medianSeg);
+      }
+
+      // Approach Piers along causeway outside main navigation channel
+      for (let pz = -3400; pz <= 3400; pz += 180) {
+        if (Math.abs(pz) < 550) continue; // Keep main 1,100m channel completely clear
+        const pierH = getSkywayDeckHeight(pz) - 3;
+        const pierBent = new THREE.Mesh(new THREE.BoxGeometry(16, pierH, 16), concretePierMat);
+        pierBent.position.set(0, pierH * 0.5, pz);
         skywayGroup.add(pierBent);
 
-        const pierCap = new THREE.Mesh(new THREE.BoxGeometry(50, 4, 18), concretePierMat);
-        pierCap.position.set(0, 60, pz);
+        const pierCap = new THREE.Mesh(new THREE.BoxGeometry(52, 4, 18), concretePierMat);
+        pierCap.position.set(0, pierH + 2, pz);
         skywayGroup.add(pierCap);
       }
 
-      // North & South Main Cable-Stayed Pylons (Z = -250 & Z = +250)
-      [-250, 250].forEach(pylonZ => {
+      // North & South Main Cable-Stayed Pylons (Z = -380 & Z = +380)
+      [-380, 380].forEach(pylonZ => {
         // Pier Footing Base at Water Level
-        const pylonFooting = new THREE.Mesh(new THREE.BoxGeometry(32, 20, 32), concretePierMat);
-        pylonFooting.position.set(0, 10, pylonZ);
+        const pylonFooting = new THREE.Mesh(new THREE.BoxGeometry(36, 24, 36), concretePierMat);
+        pylonFooting.position.set(0, 12, pylonZ);
         skywayGroup.add(pylonFooting);
 
-        // Slender Tapered Pylon Shaft rising 190m above water through the center median
-        const pylonShaft = new THREE.Mesh(new THREE.CylinderGeometry(8, 12, 180, 8), terminalFacadeMat);
-        pylonShaft.position.set(0, 100, pylonZ);
+        // Slender Tapered Pylon Shaft rising 220m above water
+        const pylonShaft = new THREE.Mesh(new THREE.CylinderGeometry(8, 14, 220, 8), terminalFacadeMat);
+        pylonShaft.position.set(0, 110, pylonZ);
         skywayGroup.add(pylonShaft);
 
-        // Aircraft Warning Light on Pylon Apex
-        const apexBeacon = new THREE.Mesh(new THREE.SphereGeometry(2.5, 8, 8), helipadRedMat);
-        apexBeacon.position.set(0, 191, pylonZ);
+        // Aircraft Warning Beacon on Pylon Apex
+        const apexBeacon = new THREE.Mesh(new THREE.SphereGeometry(3.0, 8, 8), helipadRedMat);
+        apexBeacon.position.set(0, 221, pylonZ);
         skywayGroup.add(apexBeacon);
 
         // Single-Plane Gold / Yellow Cable-Stay Fan System (21 stays per side)
@@ -3104,19 +3131,18 @@
 
           for (let i = 1; i <= numStays; i++) {
             const frac = i / numStays;
-            // Tower attachment point: rises from Y = 90 to Y = 182
-            const towerY = 88 + frac * 94;
+            const towerY = 105 + frac * 105;
             const towerPt = new THREE.Vector3(0, towerY, pylonZ);
 
-            // Deck attachment point: fans out along center median from 18m to 226m
-            const deckZ = pylonZ + spanSign * (18 + frac * 208);
-            const deckPt = new THREE.Vector3(0, 65.5, deckZ);
+            const deckZ = pylonZ + spanSign * (20 + frac * 320);
+            const deckY = getSkywayDeckHeight(deckZ) + 3;
+            const deckPt = new THREE.Vector3(0, deckY, deckZ);
 
             const cableVec = new THREE.Vector3().subVectors(deckPt, towerPt);
             const cableLen = cableVec.length();
             const cableMid = new THREE.Vector3().addVectors(towerPt, deckPt).multiplyScalar(0.5);
 
-            const cableGeo = new THREE.CylinderGeometry(0.6, 0.6, cableLen, 6);
+            const cableGeo = new THREE.CylinderGeometry(0.7, 0.7, cableLen, 6);
             const cableMesh = new THREE.Mesh(cableGeo, skywayYellowMat);
             cableMesh.position.copy(cableMid);
             cableMesh.quaternion.setFromUnitVectors(upVec, cableVec.clone().normalize());
@@ -3125,32 +3151,37 @@
         });
       });
 
-      // 4 Massive Pier Protection Dolphin Islands (Crash Barriers protecting Skyway pylons)
+      // 4 Massive Pier Protection Dolphin Islands (Crash Barriers)
       [
-        { z: -250, ox: -85 },
-        { z: -250, ox: 85 },
-        { z: 250, ox: -85 },
-        { z: 250, ox: 85 }
+        { z: -380, ox: -95 },
+        { z: -380, ox: 95 },
+        { z: 380, ox: -95 },
+        { z: 380, ox: 95 }
       ].forEach(d => {
-        const dolphinIsland = new THREE.Mesh(new THREE.CylinderGeometry(28, 36, 18, 16), mountainRockMat);
-        dolphinIsland.position.set(d.ox, 5, d.z);
+        const dolphinIsland = new THREE.Mesh(new THREE.CylinderGeometry(30, 38, 20, 16), mountainRockMat);
+        dolphinIsland.position.set(d.ox, 6, d.z);
         skywayGroup.add(dolphinIsland);
 
-        const dolphinCap = new THREE.Mesh(new THREE.CylinderGeometry(24, 24, 4, 16), concretePierMat);
-        dolphinCap.position.set(d.ox, 14, d.z);
+        const dolphinCap = new THREE.Mesh(new THREE.CylinderGeometry(26, 26, 4, 16), concretePierMat);
+        dolphinCap.position.set(d.ox, 16, d.z);
         skywayGroup.add(dolphinCap);
 
-        const dolphinBeacon = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2, 12, 8), skywayYellowMat);
-        dolphinBeacon.position.set(d.ox, 20, d.z);
+        const dolphinBeacon = new THREE.Mesh(new THREE.CylinderGeometry(1.8, 2.2, 14, 8), skywayYellowMat);
+        dolphinBeacon.position.set(d.ox, 23, d.z);
         skywayGroup.add(dolphinBeacon);
       });
 
       tampaPortGroup.add(skywayGroup);
 
-      // Pinellas Peninsula / St. Petersburg Coastline (Northwest side of Tampa Bay across channel)
+      // Pinellas Peninsula / St. Petersburg Coastline (North side of Skyway Bridge)
       const pinellasLand = new THREE.Mesh(new THREE.BoxGeometry(6000, 18, 6000), coastalGrassMat);
-      pinellasLand.position.set(-9500, 8, 3800);
+      pinellasLand.position.set(-9500, 8, 3900);
       tampaPortGroup.add(pinellasLand);
+
+      // Manatee / Bradenton Coastline (South side of Skyway Bridge)
+      const manateeLand = new THREE.Mesh(new THREE.BoxGeometry(6000, 18, 6000), coastalGrassMat);
+      manateeLand.position.set(-9500, 8, -3900);
+      tampaPortGroup.add(manateeLand);
 
       portsGroup.add(tampaPortGroup);
 
@@ -5852,11 +5883,13 @@
         { minX: -2600, maxX: 2600, minZ: -4000, maxZ: -260, desc: "Harbour & Davis Islands / TGH" },
         // MacDill AFB Peninsula
         { minX: -5500, maxX: -1600, minZ: -4500, maxZ: -1600, desc: "MacDill Peninsula" },
-        // Pinellas / St. Petersburg Peninsula (West of bay)
-        { minX: -14000, maxX: -5800, minZ: -6000, maxZ: 7000, desc: "Pinellas Peninsula" },
-        // Skyway Bridge North and South Cable-Stay Pylons & Dolphins
-        { minX: -5600, maxX: -5400, minZ: -320, maxZ: -180, desc: "Skyway North Tower & Dolphins" },
-        { minX: -5600, maxX: -5400, minZ: 180, maxZ: 320, desc: "Skyway South Tower & Dolphins" },
+        // Pinellas / St. Petersburg Peninsula (North of channel, West of bay)
+        { minX: -16000, maxX: -6000, minZ: 900, maxZ: 8000, desc: "Pinellas Peninsula" },
+        // Manatee Peninsula / Anna Maria Island (South of channel)
+        { minX: -16000, maxX: -6000, minZ: -8000, maxZ: -900, desc: "Manatee Peninsula" },
+        // Skyway Bridge North and South Cable-Stay Pylons & Dolphin Islands
+        { minX: -5620, maxX: -5380, minZ: 330, maxZ: 440, desc: "Skyway North Tower & Dolphins" },
+        { minX: -5620, maxX: -5380, minZ: -440, maxZ: -330, desc: "Skyway South Tower & Dolphins" },
 
         // --- 2. Belize City Area (Origin: -31572, 57481) ---
         // Belize Mainland Coast
