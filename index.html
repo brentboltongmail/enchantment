@@ -3256,78 +3256,73 @@
       const belizePortGroup = new THREE.Group();
       belizePortGroup.position.set(-31572, 0, 57481);
 
-      // Belize Mainland Coastal Peninsula (West side, X <= -650)
-      const belizeMainland = new THREE.Mesh(new THREE.BoxGeometry(10000, 8, 14000), coastalGrassMat);
-      belizeMainland.position.set(-6000, 3, 2000);
+      // Belize Mainland Coastal Peninsula (West of harbour, X <= -600)
+      const belizeMainland = new THREE.Mesh(new THREE.BoxGeometry(2800, 8, 3400), coastalGrassMat);
+      belizeMainland.position.set(-2000, 3, 0);
       belizePortGroup.add(belizeMainland);
 
       // Fort Point Sandy Beach Strip
-      const belizeBeach = new THREE.Mesh(new THREE.BoxGeometry(1200, 6, 2200), sandyBeachMat);
-      belizeBeach.position.set(-1100, 2.5, 900);
+      const belizeBeach = new THREE.Mesh(new THREE.BoxGeometry(350, 6, 2200), sandyBeachMat);
+      belizeBeach.position.set(-775, 2.5, 0);
       belizePortGroup.add(belizeBeach);
 
-      // The Great Belize Barrier Reef & Coral Cays (5km offshore to the East)
-      const barrierReef = new THREE.Mesh(new THREE.BoxGeometry(1200, 4, 16000), sandyBeachMat);
-      barrierReef.position.set(4500, 1.5, 1000);
-      belizePortGroup.add(barrierReef);
-
-      // Caye Caulker & Ambergris Palm Cays along the Barrier Reef
-      [-4500, -1200, 2400, 5500].forEach((cz, ci) => {
-        const cay = new THREE.Mesh(new THREE.BoxGeometry(800, 5, 1600), sandyBeachMat);
-        cay.position.set(4500, 2, cz);
+      // Caye Caulker & Ambergris Palm Cays (3.2km offshore to the East)
+      [-1200, 0, 1200].forEach((cz, ci) => {
+        const cay = new THREE.Mesh(new THREE.BoxGeometry(500, 4, 900), sandyBeachMat);
+        cay.position.set(3200, 1.5, cz);
         belizePortGroup.add(cay);
-        for (let p = -3; p <= 3; p++) {
-          addPalmTree(belizePortGroup, 4500 + (p % 2) * 120, 4, cz + p * 180, 2.2);
+        for (let p = -2; p <= 2; p++) {
+          addPalmTree(belizePortGroup, 3200 + (p % 2) * 80, 3.5, cz + p * 140, 2.2);
         }
       });
 
-      // Distant Maya Mountain Range (1,200m peaks inland to the West)
-      for (let m = 0; m < 6; m++) {
-        const mtn = new THREE.Mesh(new THREE.ConeGeometry(1200 + m * 250, 950 + m * 150, 8), mountainRockMat);
-        mtn.position.set(-9000 - m * 800, (950 + m * 150) / 2, -3000 + m * 1800);
+      // Distant Maya Mountain Range (Inland to the West, X = -6500)
+      for (let m = 0; m < 5; m++) {
+        const mtn = new THREE.Mesh(new THREE.ConeGeometry(850 + m * 150, 650 + m * 100, 8), mountainRockMat);
+        mtn.position.set(-6500 - m * 500, (650 + m * 100) / 2, -1800 + m * 900);
         belizePortGroup.add(mtn);
       }
 
       // Historic Baron Bliss Lighthouse on Fort Point (55m tall)
       const blBase = new THREE.Mesh(new THREE.CylinderGeometry(14, 18, 14, 16), terminalFacadeMat);
-      blBase.position.set(-620, 10, 650);
+      blBase.position.set(-620, 10, 350);
       belizePortGroup.add(blBase);
 
       const blTower1 = new THREE.Mesh(new THREE.CylinderGeometry(10, 14, 24, 16), lighthouseRedMat);
-      blTower1.position.set(-620, 28, 650);
+      blTower1.position.set(-620, 28, 350);
       belizePortGroup.add(blTower1);
 
       const blTower2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 10, 20, 16), terminalFacadeMat);
-      blTower2.position.set(-620, 48, 650);
+      blTower2.position.set(-620, 48, 350);
       belizePortGroup.add(blTower2);
 
       const blLantern = new THREE.Mesh(new THREE.CylinderGeometry(7, 8, 12, 16), glassWindowMat);
-      blLantern.position.set(-620, 62, 650);
+      blLantern.position.set(-620, 62, 350);
       belizePortGroup.add(blLantern);
 
       // Fort Street Tourism Village (Located safely on Fort Point shore)
       const villageColors = [caribAquaMat, caribYellowMat, caribCoralMat, terminalFacadeMat];
       for (let i = 0; i < 12; i++) {
         const house = new THREE.Mesh(new THREE.BoxGeometry(55, 28, 40), villageColors[i % 4]);
-        house.position.set(-850 + (i % 4) * 85, 18, 850 + Math.floor(i / 4) * 85);
+        house.position.set(-850 + (i % 4) * 85, 18, 480 + Math.floor(i / 4) * 85);
         belizePortGroup.add(house);
 
         const roof = new THREE.Mesh(new THREE.ConeGeometry(42, 16, 4), caribCoralMat);
-        roof.position.set(-850 + (i % 4) * 85, 38, 850 + Math.floor(i / 4) * 85);
+        roof.position.set(-850 + (i % 4) * 85, 38, 480 + Math.floor(i / 4) * 85);
         roof.rotation.y = Math.PI / 4;
         belizePortGroup.add(roof);
       }
 
       // Tender Pier & Catamarans (Extending east from Fort Point into the bay)
       const belizeTenderPier = new THREE.Mesh(new THREE.BoxGeometry(45, 6, 350), woodDeckMat);
-      belizeTenderPier.position.set(-480, 3, 500);
+      belizeTenderPier.position.set(-480, 3, 200);
       belizePortGroup.add(belizeTenderPier);
 
       for (let i = 0; i < 4; i++) {
         const tenderBoat = new THREE.Mesh(new THREE.BoxGeometry(22, 8, 48), terminalFacadeMat);
-        tenderBoat.position.set(-560 + i * 65, 3, 300);
+        tenderBoat.position.set(-560 + i * 65, 3, 50);
         belizePortGroup.add(tenderBoat);
-        addPalmTree(belizePortGroup, -750 + i * 140, 10, 750, 2.2);
+        addPalmTree(belizePortGroup, -750 + i * 140, 10, 350, 2.2);
       }
       portsGroup.add(belizePortGroup);
 
@@ -3337,16 +3332,16 @@
       const cozumelPortGroup = new THREE.Group();
       cozumelPortGroup.position.set(-24558, 0, 41402);
 
-      // Cozumel Island Landmass (East side of Cozumel Channel, 24km long)
-      const cozIsland = new THREE.Mesh(new THREE.BoxGeometry(6000, 12, 22000), sandyBeachMat);
-      cozIsland.position.set(3200, 5, 0);
+      // Cozumel Island Landmass (East side of Cozumel Channel, X >= 400, Z in [-1800, 1800])
+      const cozIsland = new THREE.Mesh(new THREE.BoxGeometry(1400, 10, 3600), sandyBeachMat);
+      cozIsland.position.set(1100, 4, 0);
       cozumelPortGroup.add(cozIsland);
 
-      const cozJungle = new THREE.Mesh(new THREE.BoxGeometry(4800, 14, 20000), tropicalJungleMat);
-      cozJungle.position.set(3800, 7, 0);
+      const cozJungle = new THREE.Mesh(new THREE.BoxGeometry(1000, 12, 3200), tropicalJungleMat);
+      cozJungle.position.set(1300, 6, 0);
       cozumelPortGroup.add(cozJungle);
 
-      // 850m Concrete Mega-Pier (Extending westward into Cozumel Channel)
+      // 850m Concrete Mega-Pier (Extending westward into Cozumel Channel from shore X=425 to X=-425)
       const cozPier = new THREE.Mesh(new THREE.BoxGeometry(850, 7, 36), concretePierMat);
       cozPier.position.set(0, 3.5, 120);
       cozumelPortGroup.add(cozPier);
@@ -3361,29 +3356,29 @@
         cozumelPortGroup.add(bollard);
       }
 
-      // Mainland Mexico / Playa del Carmen Coastline (14km across Cozumel Channel to the West)
-      const mainlandYucatan = new THREE.Mesh(new THREE.BoxGeometry(10000, 12, 26000), tropicalJungleMat);
-      mainlandYucatan.position.set(-16000, 5, 0);
+      // Mainland Mexico / Playa del Carmen Coastline (14km across channel to the West, X <= -6500)
+      const mainlandYucatan = new THREE.Mesh(new THREE.BoxGeometry(3000, 10, 4000), tropicalJungleMat);
+      mainlandYucatan.position.set(-8000, 4, 0);
       cozumelPortGroup.add(mainlandYucatan);
 
-      const mainlandBeach = new THREE.Mesh(new THREE.BoxGeometry(1200, 8, 25000), sandyBeachMat);
-      mainlandBeach.position.set(-10600, 3.5, 0);
+      const mainlandBeach = new THREE.Mesh(new THREE.BoxGeometry(400, 8, 3800), sandyBeachMat);
+      mainlandBeach.position.set(-6300, 3.5, 0);
       cozumelPortGroup.add(mainlandBeach);
 
-      // Mayan Ceremonial Monument on Cozumel Shore
+      // Mayan Ceremonial Monument on Cozumel Shore (X = 450)
       const cozMayanArch = new THREE.Mesh(new THREE.BoxGeometry(60, 45, 25), mayanLimestoneMat);
       cozMayanArch.position.set(450, 26, 320);
       cozumelPortGroup.add(cozMayanArch);
 
       for (let i = 0; i < 8; i++) {
         const palapa = new THREE.Mesh(new THREE.ConeGeometry(32, 16, 8), thatchPalapaMat);
-        palapa.position.set(300 + (i % 4) * 120, 24, 450 + Math.floor(i / 4) * 110);
+        palapa.position.set(480 + (i % 4) * 120, 24, 450 + Math.floor(i / 4) * 110);
         cozumelPortGroup.add(palapa);
-        addPalmTree(cozumelPortGroup, 250 + i * 95, 12, 380, 2.4);
+        addPalmTree(cozumelPortGroup, 450 + i * 95, 12, 380, 2.4);
       }
 
       const cozLight = new THREE.Mesh(new THREE.CylinderGeometry(6.5, 9.0, 50, 16), terminalFacadeMat);
-      cozLight.position.set(260, 28, 380);
+      cozLight.position.set(450, 28, 200);
       cozumelPortGroup.add(cozLight);
 
       portsGroup.add(cozumelPortGroup);
@@ -3394,15 +3389,15 @@
       const roatanPortGroup = new THREE.Group();
       roatanPortGroup.position.set(-22428, 0, 63924);
 
-      // Roatan Island Narrow Landmass (22km long, oriented East-West)
-      const roatanIsland = new THREE.Mesh(new THREE.BoxGeometry(22000, 10, 4500), sandyBeachMat);
-      roatanIsland.position.set(0, 4, 1800);
+      // Roatan Island Narrow Landmass (North of Coxen Hole, Z >= 400)
+      const roatanIsland = new THREE.Mesh(new THREE.BoxGeometry(4200, 10, 1600), sandyBeachMat);
+      roatanIsland.position.set(0, 4, 1200);
       roatanPortGroup.add(roatanIsland);
 
-      // Volcanic Emerald Mountain Chain (450m - 650m tall along island spine)
-      for (let m = 0; m < 7; m++) {
-        const mtn = new THREE.Mesh(new THREE.ConeGeometry(1100 + (m % 3) * 200, 450 + (m % 4) * 65, 8), tropicalJungleMat);
-        mtn.position.set(-8000 + m * 2600, (450 + (m % 4) * 65) / 2, 2200 + (m % 2) * 450);
+      // Volcanic Emerald Mountain Chain (Along island spine, Z = 1200)
+      for (let m = 0; m < 5; m++) {
+        const mtn = new THREE.Mesh(new THREE.ConeGeometry(650 + (m % 3) * 150, 320 + (m % 4) * 50, 8), tropicalJungleMat);
+        mtn.position.set(-1500 + m * 750, (320 + (m % 4) * 50) / 2, 1200);
         roatanPortGroup.add(mtn);
       }
 
@@ -3425,39 +3420,39 @@
       const costaMayaPortGroup = new THREE.Group();
       costaMayaPortGroup.position.set(-28835, 0, 50786);
 
-      // Yucatan Caribbean Mainland Coastline (West side)
-      const cmLand = new THREE.Mesh(new THREE.BoxGeometry(10000, 10, 24000), tropicalJungleMat);
-      cmLand.position.set(-5400, 4, 0);
+      // Yucatan Caribbean Mainland Coastline (West side, X <= -500)
+      const cmLand = new THREE.Mesh(new THREE.BoxGeometry(2600, 10, 3200), tropicalJungleMat);
+      cmLand.position.set(-1800, 4, 0);
       costaMayaPortGroup.add(cmLand);
 
-      const cmBeach = new THREE.Mesh(new THREE.BoxGeometry(1000, 8, 22000), sandyBeachMat);
-      cmBeach.position.set(-600, 3.5, 0);
+      const cmBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 8, 3000), sandyBeachMat);
+      cmBeach.position.set(-650, 3.5, 0);
       costaMayaPortGroup.add(cmBeach);
 
-      // 1,000m Deep-Sea Finger Pier (Jutting eastward into open Caribbean Sea)
+      // 1,000m Deep-Sea Finger Pier (Jutting eastward from shore X=-500 to X=+500 into open Caribbean Sea)
       const cmPier = new THREE.Mesh(new THREE.BoxGeometry(1000, 8, 38), concretePierMat);
       cmPier.position.set(0, 4, 120);
       costaMayaPortGroup.add(cmPier);
 
-      // Grand Mayan Stepped Pyramid Temple (120m x 120m base, 65m height)
+      // Grand Mayan Stepped Pyramid Temple (120m x 120m base, 65m height, on shore at X = -750)
       const pyrBase = new THREE.Mesh(new THREE.BoxGeometry(120, 20, 120), mayanLimestoneMat);
-      pyrBase.position.set(-450, 14, 600);
+      pyrBase.position.set(-750, 14, 450);
       costaMayaPortGroup.add(pyrBase);
 
       const pyrTier2 = new THREE.Mesh(new THREE.BoxGeometry(90, 18, 90), mayanLimestoneMat);
-      pyrTier2.position.set(-450, 32, 600);
+      pyrTier2.position.set(-750, 32, 450);
       costaMayaPortGroup.add(pyrTier2);
 
       const pyrTier3 = new THREE.Mesh(new THREE.BoxGeometry(60, 16, 60), mayanLimestoneMat);
-      pyrTier3.position.set(-450, 48, 600);
+      pyrTier3.position.set(-750, 48, 450);
       costaMayaPortGroup.add(pyrTier3);
 
       const pyrAltar = new THREE.Mesh(new THREE.BoxGeometry(32, 14, 32), mayanLimestoneMat);
-      pyrAltar.position.set(-450, 62, 600);
+      pyrAltar.position.set(-750, 62, 450);
       costaMayaPortGroup.add(pyrAltar);
 
       for (let i = 0; i < 12; i++) {
-        addPalmTree(costaMayaPortGroup, -750 + i * 70, 10, 320, 2.3);
+        addPalmTree(costaMayaPortGroup, -850 + i * 70, 10, 320, 2.3);
       }
       portsGroup.add(costaMayaPortGroup);
 
@@ -6135,24 +6130,24 @@
         { minX: -5580, maxX: -5420, minZ: 340, maxZ: 420, desc: "Skyway South Tower & Dolphins" },
 
         // --- 2. Belize City Area (Origin: -31572, 57481) ---
-        // Belize Mainland Coast (West of city, X <= -500)
-        { minX: -31572 - 8000, maxX: -31572 - 500, minZ: 57481 - 4000, maxZ: 57481 + 4000, desc: "Belize Mainland" },
-        // Great Barrier Reef & Cays (Far East offshore)
-        { minX: -31572 + 3900, maxX: -31572 + 5200, minZ: 57481 - 6000, maxZ: 57481 + 6000, desc: "Belize Barrier Reef" },
+        // Belize Mainland Coast (West of harbour, X <= -500)
+        { minX: -31572 - 3500, maxX: -31572 - 500, minZ: 57481 - 1800, maxZ: 57481 + 1800, desc: "Belize Mainland" },
+        // Barrier Reef Cays (East offshore)
+        { minX: -31572 + 2800, maxX: -31572 + 3600, minZ: 57481 - 1500, maxZ: 57481 + 1500, desc: "Belize Barrier Reef Cays" },
 
         // --- 3. Cozumel Area (Origin: -24558, 41402) ---
-        // Cozumel Island (East of cruise pier and channel)
-        { minX: -24558 + 200, maxX: -24558 + 6000, minZ: 41402 - 8000, maxZ: 41402 + 8000, desc: "Cozumel Island" },
-        // Mainland Mexico / Playa del Carmen Coastline (West across 14km channel)
-        { minX: -24558 - 14000, maxX: -24558 - 5000, minZ: 41402 - 8000, maxZ: 41402 + 8000, desc: "Mainland Mexico Coast" },
+        // Cozumel Island (East of cruise pier and channel, X >= 400, Z in [-1900, 1900])
+        { minX: -24558 + 400, maxX: -24558 + 2000, minZ: 41402 - 1900, maxZ: 41402 + 1900, desc: "Cozumel Island" },
+        // Mainland Mexico / Playa del Carmen Coastline (West across channel)
+        { minX: -24558 - 10000, maxX: -24558 - 6200, minZ: 41402 - 2200, maxZ: 41402 + 2200, desc: "Mainland Mexico Coast" },
 
         // --- 4. Roatan Island, Honduras (Origin: -22428, 63924) ---
-        // Roatan Island (Landmass south of pier approach)
-        { minX: -22428 - 3000, maxX: -22428 + 3000, minZ: 63924 + 140, maxZ: 63924 + 3500, desc: "Roatan Island" },
+        // Roatan Island (North of Coxen Hole, Z >= 400)
+        { minX: -22428 - 2200, maxX: -22428 + 2200, minZ: 63924 + 400, maxZ: 63924 + 2100, desc: "Roatan Island" },
 
         // --- 5. Puerto Costa Maya, Mexico (Origin: -28835, 50786) ---
-        // Costa Maya Mainland (West of cruise pier)
-        { minX: -28835 - 6000, maxX: -28835 - 120, minZ: 50786 - 4000, maxZ: 50786 + 4000, desc: "Costa Maya Coast" }
+        // Costa Maya Mainland (West of cruise pier, X <= -450)
+        { minX: -28835 - 3200, maxX: -28835 - 450, minZ: 50786 - 1700, maxZ: 50786 + 1700, desc: "Costa Maya Coast" }
       ];
 
       // High-Resolution Full-Hull Collision Mesh Grid
