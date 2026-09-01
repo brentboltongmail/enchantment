@@ -5265,10 +5265,10 @@
 
         shipLeafletMarker = L.marker([27.9506, -82.4572], { icon: shipDivIcon, zIndexOffset: 1000 }).addTo(leafletMap);
 
-        vesselTrailPolyline = L.polyline([], {
-          color: '#00ff88',
-          weight: 3.5,
-          opacity: 0.85
+        vesselTrailPolyline = L.polyline(vesselGpsTrail, {
+          color: '#00f0ff',
+          weight: 4.0,
+          opacity: 0.95
         }).addTo(leafletMap);
       }
 
@@ -5340,6 +5340,14 @@
         );
         const newRightV = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading);
         resetWakeSystem(newSternP, newBowP, newRightV);
+
+        // Record jump coordinate into persistent GPS voyage trail
+        const jumpLat = 27.9506 - (shipGroup.position.z / 5500.0);
+        const jumpLon = -82.4572 + (shipGroup.position.x / 5500.0);
+        vesselGpsTrail.push([jumpLat, jumpLon]);
+        if (vesselTrailPolyline) {
+          vesselTrailPolyline.setLatLngs(vesselGpsTrail);
+        }
 
         closeMap();
         triggerPortArrival(port);
@@ -6983,9 +6991,9 @@
             arrowEl.style.transform = `rotate(${degHeading}deg)`;
           }
 
-          if (vesselGpsTrail.length === 0 || Math.hypot(vesselGpsTrail[vesselGpsTrail.length - 1][0] - latVal, vesselGpsTrail[vesselGpsTrail.length - 1][1] - lonVal) > 0.005) {
+          if (vesselGpsTrail.length === 0 || Math.hypot(vesselGpsTrail[vesselGpsTrail.length - 1][0] - latVal, vesselGpsTrail[vesselGpsTrail.length - 1][1] - lonVal) > 0.003) {
             vesselGpsTrail.push([latVal, lonVal]);
-            if (vesselGpsTrail.length > 250) vesselGpsTrail.shift();
+            // Never erase any track points - persistently record the full complete voyage
             if (vesselTrailPolyline) {
               vesselTrailPolyline.setLatLngs(vesselGpsTrail);
             }
