@@ -8110,9 +8110,9 @@
         const ribUV = ribbonGeo.attributes.uv.array;
         const ribAlpha = ribbonGeo.attributes.alpha.array;
 
-        // Wake starts at ship beam width (~32m) and flares outward into majestic 480m Kelvin V-cone
-        const startBeamWidth = THREE.MathUtils.lerp(18.0, 34.0, speedRatio);
-        const maxExpandedWidth = THREE.MathUtils.lerp(220.0, 520.0, Math.pow(Math.max(0.35, speedRatio), 0.65));
+        // Wake starts at ship beam width (~32m) and slowly spreads outward into expanding Kelvin V-cone
+        const startBeamWidth = THREE.MathUtils.lerp(26.0, 34.0, speedRatio);
+        const maxExpandedWidth = THREE.MathUtils.lerp(180.0, 320.0, Math.pow(Math.max(0.35, speedRatio), 0.65));
 
         for (let i = 0; i <= WAKE_SEGMENTS; i++) {
           const node = ribbonNodes[i];
@@ -8121,15 +8121,16 @@
           const progress = i / WAKE_SEGMENTS;
           const nodeSpeed = node.speedRatio;
 
-          // Natural age fade (dissipates smoothly over ~45 seconds)
-          const ageFade = Math.pow(Math.max(0.35, 1.0 - (node.age / 45.0)), 0.85);
-          const progressFade = Math.pow(1.0 - progress, 0.75);
+          // Natural age fade (smoothly dissipates over ~40 seconds)
+          const ageFade = Math.max(0.0, 1.0 - (node.age / 40.0));
+          // Distance fade: exactly 100% (1.0) at the stern (progress = 0) down to 0% (0.0) at far tail
+          const progressFade = Math.pow(1.0 - progress, 1.25);
 
-          // Dramatic Kelvin V-cone expansion
+          // Smooth Kelvin V-cone spreading expansion
           const currentWidth = THREE.MathUtils.lerp(
             startBeamWidth,
             maxExpandedWidth * Math.max(0.35, nodeSpeed),
-            Math.pow(progress, 0.50)
+            Math.pow(progress, 0.65)
           );
           const halfW = currentWidth * 0.5;
 
@@ -8156,7 +8157,8 @@
           ribUV[v1 * 2] = 1.0;
           ribUV[v1 * 2 + 1] = progress * 14.0;
 
-          const finalAlpha = progressFade * ageFade * Math.min(1.0, Math.max(0.45, nodeSpeed * 1.6));
+          // Opacity reduces smoothly from 100% (1.0) coming out the stern down to 0% (0.0) at the tail
+          const finalAlpha = Math.max(0.0, Math.min(1.0, progressFade * ageFade));
           ribAlpha[v0] = finalAlpha;
           ribAlpha[v1] = finalAlpha;
         }
@@ -8204,11 +8206,11 @@
           bNode.age += dt;
 
           const prog = i / BOW_SEGMENTS;
-          const bWidth = THREE.MathUtils.lerp(10.0, 200.0 * Math.max(0.30, bNode.speedRatio), Math.pow(prog, 0.60));
+          const bWidth = THREE.MathUtils.lerp(8.0, 140.0 * Math.max(0.30, bNode.speedRatio), Math.pow(prog, 0.65));
           const bHalfW = bWidth * 0.5;
 
-          const bAgeFade = Math.pow(Math.max(0.30, 1.0 - (bNode.age / 25.0)), 0.85);
-          const bProgFade = Math.pow(1.0 - prog, 0.80);
+          const bAgeFade = Math.max(0.0, 1.0 - (bNode.age / 20.0));
+          const bProgFade = Math.pow(1.0 - prog, 1.25);
 
           const bLPos = bNode.pos.clone().addScaledVector(bNode.normal, -bHalfW);
           const bRPos = bNode.pos.clone().addScaledVector(bNode.normal, bHalfW);
@@ -8232,7 +8234,7 @@
           bWakeUV[v1 * 2] = 1.0;
           bWakeUV[v1 * 2 + 1] = prog * 6.0;
 
-          const bFinalAlpha = bProgFade * bAgeFade * Math.min(1.0, Math.max(0.35, bNode.speedRatio * 1.5));
+          const bFinalAlpha = Math.max(0.0, Math.min(1.0, bProgFade * bAgeFade));
           bWakeAlpha[v0] = bFinalAlpha;
           bWakeAlpha[v1] = bFinalAlpha;
         }
