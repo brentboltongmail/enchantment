@@ -7413,15 +7413,6 @@
         minimapCtx.lineTo(cx, cy + radius);
         minimapCtx.stroke();
 
-        // 8. Rotating Radar Sweep Line
-        const sweepAngle = (time * 1.5) % (Math.PI * 2);
-        minimapCtx.beginPath();
-        minimapCtx.moveTo(cx, cy);
-        minimapCtx.lineTo(cx + Math.cos(sweepAngle) * radius, cy + Math.sin(sweepAngle) * radius);
-        minimapCtx.strokeStyle = "rgba(0, 255, 150, 0.35)";
-        minimapCtx.lineWidth = 1.5;
-        minimapCtx.stroke();
-
         // 9. Compass Cardinals (North / South / East / West)
         minimapCtx.font = "bold 10px sans-serif";
         minimapCtx.textAlign = "center";
