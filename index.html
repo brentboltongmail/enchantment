@@ -1295,7 +1295,7 @@
         window.innerWidth,
         window.innerHeight
       );
-      camera.position.set(280, 110, 220);
+      camera.position.set(280, 110, 160);
 
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -1312,6 +1312,7 @@
       document.body.appendChild(renderer.domElement);
 
       const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 22, -60);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
       controls.maxPolarAngle = Math.PI / 2 - 0.02;
@@ -2115,7 +2116,7 @@
           lat: 27.9506,
           lon: -82.4572,
           worldX: 0,
-          worldZ: 0,
+          worldZ: -60,
           headingToNext: -Math.PI / 2 + 0.35,
           legDistNM: 0,
           totalDistNM: 0,
@@ -2237,7 +2238,7 @@
           lat: 27.9506,
           lon: -82.4572,
           worldX: 0,
-          worldZ: 0,
+          worldZ: -60,
           headingToNext: 0,
           legDistNM: 260,
           desc: "Homeport arrival at Port Tampa Bay."
@@ -2247,38 +2248,61 @@
       const portsGroup = new THREE.Group();
       scene.add(portsGroup);
 
-      // Shared Architectural Port & City Materials (High-Fidelity)
-      const concretePierMat = new THREE.MeshStandardMaterial({ color: 0x90a4ae, roughness: 0.65, metalness: 0.15 });
-      const pierPilingMat = new THREE.MeshStandardMaterial({ color: 0x263238, roughness: 0.85 });
+      // Texture Loader for High-Fidelity Photorealistic PBR Textures
+      const texLoader = new THREE.TextureLoader();
+      function loadSeamlessTexture(path, repeatX = 1, repeatY = 1) {
+        const tex = texLoader.load(path);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(repeatX, repeatY);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        return tex;
+      }
+
+      const grassTex = loadSeamlessTexture("./textures/grass.jpg", 40, 40);
+      const concreteTex = loadSeamlessTexture("./textures/concrete.jpg", 18, 3);
+      const sandTex = loadSeamlessTexture("./textures/sand.jpg", 25, 25);
+      const asphaltTex = loadSeamlessTexture("./textures/asphalt.jpg", 35, 2);
+      const woodDeckTex = loadSeamlessTexture("./textures/wood_deck.jpg", 12, 12);
+      const jungleTex = loadSeamlessTexture("./textures/jungle.jpg", 30, 30);
+      const rockTex = loadSeamlessTexture("./textures/mountain_rock.jpg", 16, 16);
+      const skyscraperTex = loadSeamlessTexture("./textures/skyscraper_facade.jpg", 6, 14);
+      const containerTex = loadSeamlessTexture("./textures/container_ribs.jpg", 2, 2);
+      const terracottaTex = loadSeamlessTexture("./textures/terracotta_tiles.jpg", 6, 6);
+      const palmBarkTex = loadSeamlessTexture("./textures/palm_bark.jpg", 1, 6);
+
+      // Shared Architectural Port & City Materials (High-Fidelity PBR with AI Textures)
+      const concretePierMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xe0e6ed, roughness: 0.7, metalness: 0.15 });
+      const pierPilingMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0x455a64, roughness: 0.85 });
       const bollardMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.35, metalness: 0.85 });
       const rubberFenderMat = new THREE.MeshStandardMaterial({ color: 0x1e272c, roughness: 0.95 });
       const hazardStripeMat = new THREE.MeshStandardMaterial({ color: 0xfbc02d, roughness: 0.4, metalness: 0.3 });
-      const woodDeckMat = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.85 });
-      const sandyBeachMat = new THREE.MeshStandardMaterial({ color: 0xe0d6c8, roughness: 0.9 });
-      const coastalGrassMat = new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.75 });
-      const tropicalJungleMat = new THREE.MeshStandardMaterial({ color: 0x1b5e20, roughness: 0.85 });
-      const mountainRockMat = new THREE.MeshStandardMaterial({ color: 0x4e342e, roughness: 0.9 });
-      const mayanLimestoneMat = new THREE.MeshStandardMaterial({ color: 0xbcaaa4, roughness: 0.95 });
+      const woodDeckMat = new THREE.MeshStandardMaterial({ map: woodDeckTex, color: 0xffffff, roughness: 0.8 });
+      const sandyBeachMat = new THREE.MeshStandardMaterial({ map: sandTex, color: 0xffffff, roughness: 0.9 });
+      const coastalGrassMat = new THREE.MeshStandardMaterial({ map: grassTex, color: 0x88cc88, roughness: 0.85 });
+      const tropicalJungleMat = new THREE.MeshStandardMaterial({ map: jungleTex, color: 0xaae0aa, roughness: 0.85 });
+      const mountainRockMat = new THREE.MeshStandardMaterial({ map: rockTex, color: 0xffffff, roughness: 0.9 });
+      const mayanLimestoneMat = new THREE.MeshStandardMaterial({ map: rockTex, color: 0xe0d6cb, roughness: 0.95 });
       
       // Port Terminal & Urban Architecture Materials
-      const terminalFacadeMat = new THREE.MeshStandardMaterial({ color: 0xf4f6f8, roughness: 0.32 });
+      const terminalFacadeMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xf4f6f8, roughness: 0.35 });
       const terminalBlueRoofMat = new THREE.MeshStandardMaterial({ color: 0x0277bd, roughness: 0.28, metalness: 0.35 });
       const terminalNavyMat = new THREE.MeshStandardMaterial({ color: 0x01579b, roughness: 0.3, metalness: 0.4 });
-      const glassWindowMat = new THREE.MeshStandardMaterial({ color: 0x80d8ff, roughness: 0.08, metalness: 0.88, transparent: true, opacity: 0.75 });
+      const glassWindowMat = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x80d8ff, roughness: 0.08, metalness: 0.88, transparent: true, opacity: 0.8 });
       const glassAquaMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, roughness: 0.08, metalness: 0.9, transparent: true, opacity: 0.8 });
-      const roadAsphaltMat = new THREE.MeshStandardMaterial({ color: 0x263238, roughness: 0.92 });
-      const curbConcreteMat = new THREE.MeshStandardMaterial({ color: 0xcfcfcf, roughness: 0.7 });
+      const roadAsphaltMat = new THREE.MeshStandardMaterial({ map: asphaltTex, color: 0xffffff, roughness: 0.88 });
+      const curbConcreteMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xd0d0d0, roughness: 0.7 });
       
       // Industrial Cargo, Gantry Crane & Tank Farm Materials
       const craneBlueMat = new THREE.MeshStandardMaterial({ color: 0x1976d2, roughness: 0.35, metalness: 0.65 });
       const craneOrangeMat = new THREE.MeshStandardMaterial({ color: 0xff6d00, roughness: 0.35, metalness: 0.55 });
-      const tankWhiteMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.45, metalness: 0.25 });
-      const siloConcreteMat = new THREE.MeshStandardMaterial({ color: 0xb0bec5, roughness: 0.85 });
-      const containerBlueMat = new THREE.MeshStandardMaterial({ color: 0x0288d1, roughness: 0.45 });
-      const containerGreenMat = new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: 0.45 });
-      const containerOrangeMat = new THREE.MeshStandardMaterial({ color: 0xf57c00, roughness: 0.45 });
-      const containerRedMat = new THREE.MeshStandardMaterial({ color: 0xc62828, roughness: 0.45 });
-      const containerGrayMat = new THREE.MeshStandardMaterial({ color: 0x546e7a, roughness: 0.45 });
+      const tankWhiteMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xe8e8e8, roughness: 0.45, metalness: 0.25 });
+      const siloConcreteMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xcccccc, roughness: 0.8 });
+      const containerBlueMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0x0288d1, roughness: 0.5 });
+      const containerGreenMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0x2e7d32, roughness: 0.5 });
+      const containerOrangeMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0xf57c00, roughness: 0.5 });
+      const containerRedMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0xc62828, roughness: 0.5 });
+      const containerGrayMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0x546e7a, roughness: 0.5 });
       const helipadRedMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.4 });
 
       // Vehicle & Equipment Materials
@@ -2290,23 +2314,23 @@
       const steelGantryMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, roughness: 0.4, metalness: 0.6 });
       
       // Sparkman Wharf & Caribbean Palette
-      const caribAquaMat = new THREE.MeshStandardMaterial({ color: 0x00bcd4, roughness: 0.45 });
-      const caribYellowMat = new THREE.MeshStandardMaterial({ color: 0xfbc02d, roughness: 0.45 });
-      const caribCoralMat = new THREE.MeshStandardMaterial({ color: 0xff5722, roughness: 0.45 });
-      const caribLimeMat = new THREE.MeshStandardMaterial({ color: 0x7cb342, roughness: 0.45 });
-      const caribPurpleMat = new THREE.MeshStandardMaterial({ color: 0x8e24aa, roughness: 0.45 });
-      const thatchPalapaMat = new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: 0.95 });
+      const caribAquaMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0x00bcd4, roughness: 0.45 });
+      const caribYellowMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0xfbc02d, roughness: 0.45 });
+      const caribCoralMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0xff5722, roughness: 0.45 });
+      const caribLimeMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0x7cb342, roughness: 0.45 });
+      const caribPurpleMat = new THREE.MeshStandardMaterial({ map: containerTex, color: 0x8e24aa, roughness: 0.45 });
+      const thatchPalapaMat = new THREE.MeshStandardMaterial({ map: grassTex, color: 0x8d6e63, roughness: 0.95 });
       const lighthouseRedMat = new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: 0.35 });
       
       // Skyscraper Materials
-      const skyGlassCyan = new THREE.MeshStandardMaterial({ color: 0x1565c0, roughness: 0.12, metalness: 0.92 });
-      const skyGlassTeal = new THREE.MeshStandardMaterial({ color: 0x00838f, roughness: 0.12, metalness: 0.88 });
-      const skyStoneMat = new THREE.MeshStandardMaterial({ color: 0xe8eaf6, roughness: 0.45 });
-      const skyDarkMat = new THREE.MeshStandardMaterial({ color: 0x1c2529, roughness: 0.35, metalness: 0.5 });
+      const skyGlassCyan = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x1565c0, roughness: 0.12, metalness: 0.92 });
+      const skyGlassTeal = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x00838f, roughness: 0.12, metalness: 0.88 });
+      const skyStoneMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xe8eaf6, roughness: 0.45 });
+      const skyDarkMat = new THREE.MeshStandardMaterial({ map: skyscraperTex, color: 0x1c2529, roughness: 0.35, metalness: 0.5 });
       const skyGoldCrownMat = new THREE.MeshStandardMaterial({ color: 0xffd54f, roughness: 0.22, metalness: 0.88 });
       const skywayYellowMat = new THREE.MeshStandardMaterial({ color: 0xfbc02d, roughness: 0.35, metalness: 0.65 });
-      const terracottaRoofMat = new THREE.MeshStandardMaterial({ color: 0xd84315, roughness: 0.72 });
-      const villaWallMat = new THREE.MeshStandardMaterial({ color: 0xfffde7, roughness: 0.6 });
+      const terracottaRoofMat = new THREE.MeshStandardMaterial({ map: terracottaTex, color: 0xffffff, roughness: 0.72 });
+      const villaWallMat = new THREE.MeshStandardMaterial({ map: concreteTex, color: 0xfffde7, roughness: 0.6 });
       const yachtHullMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
       const poolWaterMat = new THREE.MeshStandardMaterial({ color: 0x00e5ff, roughness: 0.1, metalness: 0.3 });
 
@@ -2315,7 +2339,7 @@
         const palm = new THREE.Group();
         
         const trunkGeo = new THREE.CylinderGeometry(0.6 * scale, 1.1 * scale, 14 * scale, 8);
-        const trunkMat = new THREE.MeshStandardMaterial({ color: 0x5d4037, roughness: 0.85 });
+        const trunkMat = new THREE.MeshStandardMaterial({ map: palmBarkTex, color: 0xffffff, roughness: 0.85 });
         const trunk = new THREE.Mesh(trunkGeo, trunkMat);
         trunk.position.y = 7 * scale;
         trunk.rotation.z = (Math.random() - 0.5) * 0.18;
@@ -2803,7 +2827,7 @@
 
       // Florida Mainland Grass Landmass
       const tampaLand = new THREE.Mesh(new THREE.BoxGeometry(4500, 18, 3200), coastalGrassMat);
-      tampaLand.position.set(500, 8, 1600);
+      tampaLand.position.set(500, 8, 1746);
       tampaPortGroup.add(tampaLand);
 
       for (let i = -18; i <= 24; i++) {
@@ -3282,6 +3306,7 @@
       // 6. SHIP MODEL & STEERING PHYSICS
       // ==========================================
       const shipGroup = new THREE.Group();
+      shipGroup.position.set(0, 0, -60);
       scene.add(shipGroup);
 
       const shipMeshWrapper = new THREE.Group();
@@ -5906,7 +5931,7 @@
       let lastBowPos = new THREE.Vector3();
       let accumulatedDistance = 0;
       let lastSprayEmitTime = 0;
-      const prevShipGroupPos = new THREE.Vector3(0, 0, 0);
+      const prevShipGroupPos = new THREE.Vector3(0, 0, -60);
 
       function animate() {
         requestAnimationFrame(animate);
