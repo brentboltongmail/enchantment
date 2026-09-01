@@ -3302,14 +3302,14 @@
 
       tampaPortGroup.add(skywayGroup);
 
-      // Pinellas Peninsula / St. Petersburg Coastline (North side of Skyway Bridge)
+      // Pinellas Peninsula / St. Petersburg Coastline (North side of Skyway Bridge, -Z)
       const pinellasLand = new THREE.Mesh(new THREE.BoxGeometry(6000, 18, 6000), coastalGrassMat);
-      pinellasLand.position.set(-9500, 8, 3900);
+      pinellasLand.position.set(-9500, 8, -3900);
       tampaPortGroup.add(pinellasLand);
 
-      // Manatee / Bradenton Coastline (South side of Skyway Bridge)
+      // Manatee / Bradenton Coastline (South side of Skyway Bridge, +Z)
       const manateeLand = new THREE.Mesh(new THREE.BoxGeometry(6000, 18, 6000), coastalGrassMat);
-      manateeLand.position.set(-9500, 8, -3900);
+      manateeLand.position.set(-9500, 8, 3900);
       tampaPortGroup.add(manateeLand);
 
       portsGroup.add(tampaPortGroup);
@@ -6180,13 +6180,13 @@
         { minX: -600, maxX: 800, minZ: -1200, maxZ: -270, desc: "Davis Islands & TGH" },
         // MacDill AFB Peninsula (Southwest tip of Interbay peninsula)
         { minX: -5200, maxX: -2800, minZ: -4500, maxZ: -1800, desc: "MacDill Peninsula" },
-        // Pinellas / St. Petersburg Coastline (North of Skyway Bridge)
-        { minX: -13000, maxX: -6500, minZ: 1200, maxZ: 7000, desc: "Pinellas Coastline" },
-        // Manatee / Bradenton Coastline (South of Skyway Bridge)
-        { minX: -13000, maxX: -6500, minZ: -7000, maxZ: -1200, desc: "Manatee Coastline" },
+        // Pinellas / St. Petersburg Coastline (North of Skyway Bridge, -Z)
+        { minX: -13000, maxX: -6500, minZ: -7000, maxZ: -1200, desc: "Pinellas Coastline" },
+        // Manatee / Bradenton Coastline (South of Skyway Bridge, +Z)
+        { minX: -13000, maxX: -6500, minZ: 1200, maxZ: 7000, desc: "Manatee Coastline" },
         // Skyway Bridge North and South Cable-Stay Pylons & Dolphin Islands
-        { minX: -5580, maxX: -5420, minZ: 340, maxZ: 420, desc: "Skyway North Tower & Dolphins" },
-        { minX: -5580, maxX: -5420, minZ: -420, maxZ: -340, desc: "Skyway South Tower & Dolphins" },
+        { minX: -5580, maxX: -5420, minZ: -420, maxZ: -340, desc: "Skyway North Tower & Dolphins" },
+        { minX: -5580, maxX: -5420, minZ: 340, maxZ: 420, desc: "Skyway South Tower & Dolphins" },
 
         // --- 2. Belize City Area (Origin: -31572, 57481) ---
         // Belize Mainland Coast (West of city)
