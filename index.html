@@ -3326,6 +3326,107 @@
       manateeLand.position.set(-9500, 8, 3900);
       tampaPortGroup.add(manateeLand);
 
+      // ==========================================
+      // CONTINENTAL GEOGRAPHY & CONNECTED REAL-WORLD COASTLINES
+      // ==========================================
+      const worldContinentGroup = new THREE.Group();
+      scene.add(worldContinentGroup);
+
+      // --- A. CONTINENTAL FLORIDA PENINSULA & TAMPA BAY ---
+      // 1. North / Central Florida Mainland (Connecting Tampa north through Citrus, Hernando, Ocala to Panhandle)
+      const northFloridaMainland = new THREE.Mesh(new THREE.BoxGeometry(24000, 10, 18000), coastalGrassMat);
+      northFloridaMainland.position.set(8000, 4.0, -10000);
+      worldContinentGroup.add(northFloridaMainland);
+
+      // 2. South Florida Peninsula (Connecting Tampa Bay south through Sarasota, Charlotte Harbor, Fort Myers, Naples, Everglades)
+      const southFloridaMainland = new THREE.Mesh(new THREE.BoxGeometry(22000, 10, 20000), coastalGrassMat);
+      southFloridaMainland.position.set(8500, 4.0, 11000);
+      worldContinentGroup.add(southFloridaMainland);
+
+      // 3. Florida Keys Archipelagic Coral Reef Cays (Curving toward Key West)
+      for (let k = 0; k < 8; k++) {
+        const keyFrac = k / 7;
+        const kx = 16000 - keyFrac * 12000;
+        const kz = 17500 + Math.sin(keyFrac * Math.PI * 0.5) * 2200;
+        const keyMesh = new THREE.Mesh(new THREE.BoxGeometry(1200, 5, 800), sandyBeachMat);
+        keyMesh.position.set(kx, 2.0, kz);
+        worldContinentGroup.add(keyMesh);
+        addPalmTree(worldContinentGroup, kx + 80, 4.5, kz, 2.0);
+      }
+
+      // --- B. CONTINUOUS YUCATAN, BELIZE & CENTRAL AMERICAN CONTINENTAL COASTLINE ---
+      // The massive western rim of the Caribbean Sea (over 600 nautical miles of continuous interconnected coast)
+
+      // 1. Northern Yucatan & Cancun (North of Cozumel, connecting Cabo Catoche to Riviera Maya)
+      const cancunMainland = new THREE.Mesh(new THREE.BoxGeometry(22000, 12, 8500), tropicalJungleMat);
+      cancunMainland.position.set(-36000, 5.0, 36500);
+      worldContinentGroup.add(cancunMainland);
+
+      const cancunBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 7, 8500), sandyBeachMat);
+      cancunBeach.position.set(-24850, 3.0, 36500);
+      worldContinentGroup.add(cancunBeach);
+
+      // 2. Riviera Maya & Tulum (Facing Cozumel Channel, connecting Cancun south to Costa Maya)
+      const rivieraMayaMainland = new THREE.Mesh(new THREE.BoxGeometry(20000, 12, 8500), tropicalJungleMat);
+      rivieraMayaMainland.position.set(-37000, 5.0, 45000);
+      worldContinentGroup.add(rivieraMayaMainland);
+
+      const rivieraBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 7, 8500), sandyBeachMat);
+      rivieraBeach.position.set(-26850, 3.0, 45000);
+      worldContinentGroup.add(rivieraBeach);
+
+      // 3. Costa Maya & Chetumal Continental Coast (Connecting Tulum south to Belize)
+      const costaMayaContinent = new THREE.Mesh(new THREE.BoxGeometry(20000, 12, 6000), tropicalJungleMat);
+      costaMayaContinent.position.set(-39000, 5.0, 51500);
+      worldContinentGroup.add(costaMayaContinent);
+
+      const costaMayaBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 7, 6000), sandyBeachMat);
+      costaMayaBeach.position.set(-28850, 3.0, 51500);
+      worldContinentGroup.add(costaMayaBeach);
+
+      // 4. Northern & Central Belize Mainland (Connecting Chetumal through Belize City to Stann Creek)
+      const belizeContinent = new THREE.Mesh(new THREE.BoxGeometry(18000, 10, 8500), tropicalJungleMat);
+      belizeContinent.position.set(-41000, 4.5, 58000);
+      worldContinentGroup.add(belizeContinent);
+
+      const belizeBeachCont = new THREE.Mesh(new THREE.BoxGeometry(300, 6, 8500), sandyBeachMat);
+      belizeBeachCont.position.set(-31850, 2.5, 58000);
+      worldContinentGroup.add(belizeBeachCont);
+
+      // 5. Southern Belize & Gulf of Honduras (Connecting Belize City south to Guatemala/Honduras)
+      const southBelizeContinent = new THREE.Mesh(new THREE.BoxGeometry(18000, 10, 6000), tropicalJungleMat);
+      southBelizeContinent.position.set(-42000, 4.5, 64500);
+      worldContinentGroup.add(southBelizeContinent);
+
+      // 6. Honduras Continental Coast & Cordillera Nombre de Dios (South of Roatan across Bay of Honduras)
+      const hondurasContinent = new THREE.Mesh(new THREE.BoxGeometry(26000, 14, 8000), tropicalJungleMat);
+      hondurasContinent.position.set(-24000, 6.0, 70000);
+      worldContinentGroup.add(hondurasContinent);
+
+      const hondurasBeach = new THREE.Mesh(new THREE.BoxGeometry(26000, 7, 300), sandyBeachMat);
+      hondurasBeach.position.set(-24000, 3.0, 65850);
+      worldContinentGroup.add(hondurasBeach);
+
+      // Continuous Mountain Range along Central America (Maya Mountains & Pico Bonito)
+      for (let m = 0; m < 14; m++) {
+        const mFrac = m / 13;
+        const mx = THREE.MathUtils.lerp(-44000, -22000, mFrac);
+        const mz = THREE.MathUtils.lerp(54000, 71000, mFrac);
+        const mHeight = 850 + (m % 4) * 220;
+        const mtn = new THREE.Mesh(new THREE.ConeGeometry(1200 + (m % 3) * 300, mHeight, 8), mountainRockMat);
+        mtn.position.set(mx, mHeight * 0.5, mz);
+        worldContinentGroup.add(mtn);
+      }
+
+      // --- C. WESTERN CUBA (Pinar del Rio & Cabo San Antonio, East of Yucatan Channel) ---
+      const cubaContinent = new THREE.Mesh(new THREE.BoxGeometry(14000, 12, 6000), tropicalJungleMat);
+      cubaContinent.position.set(-7000, 5.0, 33500);
+      worldContinentGroup.add(cubaContinent);
+
+      const cubaBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 7, 6000), sandyBeachMat);
+      cubaBeach.position.set(-14150, 3.0, 33500);
+      worldContinentGroup.add(cubaBeach);
+
       portsGroup.add(tampaPortGroup);
 
       // ----------------------------------------
