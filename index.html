@@ -3529,10 +3529,10 @@
       shipGroup.add(shipMeshWrapper);
 
       const shipState = {
-        speed: 0,             // Current speed in knots (0 to 40.0 kts)
+        speed: 0,             // Current speed in knots (0 to 80.0 kts)
         targetSpeed: 0,       // Commanded speed
-        maxSpeed: 40.0,       // Maximum ahead top speed (40.0 kts)
-        minSpeed: -8.0,       // Max reverse / astern speed
+        maxSpeed: 80.0,       // Maximum ahead top speed (80.0 kts - doubled)
+        minSpeed: -14.0,      // Max reverse / astern speed
         heading: 0,           // Ship heading angle in radians (0 = Facing -X)
         rudder: 0,            // -1.0 (Port / Left) to +1.0 (Starboard / Right)
         turnRate: 0,          // Angular velocity
@@ -6447,9 +6447,9 @@
           }
         } else {
           if (isUp) {
-            shipState.targetSpeed = Math.min(shipState.targetSpeed + 10.0 * dt, shipState.maxSpeed);
+            shipState.targetSpeed = Math.min(shipState.targetSpeed + 18.0 * dt, shipState.maxSpeed);
           } else if (isDown) {
-            shipState.targetSpeed = Math.max(shipState.targetSpeed - 11.0 * dt, shipState.minSpeed);
+            shipState.targetSpeed = Math.max(shipState.targetSpeed - 18.0 * dt, shipState.minSpeed);
           }
 
           if (isLeft) targetRudder -= 1.0;
