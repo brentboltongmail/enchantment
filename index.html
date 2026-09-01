@@ -1265,16 +1265,7 @@
       <button id="btn-cam-mode" class="hud-btn" title="Camera Angles (Press 'C')">🎥 (C)amera</button>
       <button id="btn-atmo" class="hud-btn" title="Time of Day (Press 'T')">☀️ (T)ime: Noon</button>
       <button id="btn-rotate" class="hud-btn active" title="Auto-Rotate (Press 'O')">🔄 (O)rbit</button>
-      <button id="btn-reset" class="hud-btn" title="Reset View (Press 'X')">⏮ (X) Reset</button>
-    </div>
-
-    <!-- 3D Deck Venue Hotspot Card -->
-    <div id="venue-card" class="venue-card">
-      <button id="venue-close-btn" class="venue-close-btn">&times;</button>
-      <div class="venue-badge" id="venue-deck">DECK 11 AFT</div>
-      <div class="venue-title" id="venue-name">Viking Crown Lounge</div>
-      <div class="venue-desc" id="venue-desc">The iconic crown jewel of Enchantment of the Seas offering 360-degree panoramic ocean views, sunset cocktails, and live nighttime music.</div>
-      <div class="venue-tip" id="venue-tip">💡 <strong>Bolton Crew Tip:</strong> Best spot for sail-away drinks and panoramic photos leaving Tampa Bay!</div>
+      <button id="btn-stop-engines" class="hud-btn" style="background: linear-gradient(135deg, rgba(220, 20, 60, 0.55), rgba(160, 10, 30, 0.55)); border-color: rgba(255, 80, 80, 0.65); color: #fff; font-weight: 700;" title="Stop Engines (Press 'X')">🛑 (X) Stop</button>
     </div>
 
     <!-- Passenger Cabin Directory / Guest Roster Modal -->
@@ -5216,7 +5207,7 @@
       const btnNextSong = document.getElementById("btn-next-song");
       const btnCamMode = document.getElementById("btn-cam-mode");
       const btnRotate = document.getElementById("btn-rotate");
-      const btnReset = document.getElementById("btn-reset");
+      const btnStopEngines = document.getElementById("btn-stop-engines");
       const btnMap = document.getElementById("btn-map");
       const btnCloseMap = document.getElementById("btn-close-map");
       const mapModal = document.getElementById("map-modal");
@@ -5561,7 +5552,7 @@
         } else if (code === "KeyO" || key === "o") {
           if (btnRotate) btnRotate.click();
         } else if (code === "KeyX" || key === "x") {
-          if (btnReset) btnReset.click();
+          stopEngines();
         } else if (e.code === "Escape") {
           closeMap();
           if (typeof closeRoster === "function") closeRoster();
@@ -5848,20 +5839,26 @@
         btnRotate.classList.toggle("active", autoRotate);
       });
 
-      btnReset.addEventListener("click", () => {
-        setCameraMode(0); // Free Orbit
-        autoRotate = true;
-        controls.autoRotate = true;
-        btnRotate.classList.add("active");
-        userInteracting = false;
+      // 5. Emergency Engine Stop Action ([X] Stop Engines)
+      function stopEngines() {
+        shipState.targetSpeed = 0;
+        shipState.speed = 0;
+        shipState.rudder = 0;
+        shipState.turnRate = 0;
+        autopilotActive = false;
+        autopilotTargetPort = null;
+        if (helmStatus) {
+          helmStatus.textContent = "STOPPED";
+          helmStatus.style.color = "#ff4444";
+        }
+        showArrivalBanner("🛑 All Engines Stopped", "Throttle cut to 0.0 kts • Vessel brought to a full stop");
+      }
 
-        controls.target.set(shipGroup.position.x, 22, shipGroup.position.z);
-        const resetOffset = new THREE.Vector3(280, 110, 220);
-        camera.position.copy(controls.target).add(resetOffset);
-        controls.update();
-      });
+      if (btnStopEngines) {
+        btnStopEngines.addEventListener("click", stopEngines);
+      }
 
-      // 5. Time-of-Day / Atmosphere Presets (Noon, Sunset, Twilight, Midnight)
+      // 6. Time-of-Day / Atmosphere Presets (Noon, Sunset, Twilight, Midnight)
       const ATMO_PRESETS = [
         { name: "☀️ (T)ime: Noon", sky: 0x7bbbe3, fog: 0x7bbbe3, sun: 1.6, ambient: 0.85, isNight: false },
         { name: "🌅 (T)ime: Sunset", sky: 0xff6a4d, fog: 0xdd4b39, sun: 1.2, ambient: 0.70, isNight: false },
@@ -5881,81 +5878,6 @@
           nightSkyColor.setHex(preset.isNight ? preset.sky : 0x060c18);
         });
       }
-
-      // 6. Interactive 3D Deck Tour Hotspot Pins
-      const DECK_VENUES = [
-        { id: "viking", name: "Viking Crown Lounge", deck: "DECK 11 AFT", pos: new THREE.Vector3(75, 44, 0), desc: "The crown jewel of Enchantment of the Seas offering 360-degree panoramic ocean views, cocktails, and nighttime dancing.", tip: "Best spot for sail-away drinks leaving Tampa Bay!" },
-        { id: "pool", name: "Main Pool & Solarium", deck: "DECK 9 MIDSHIP", pos: new THREE.Vector3(-15, 26, 0), desc: "Spacious pool deck featuring sun loungers, whirlpools, poolside bar, and adults-only glass-canopied Solarium.", tip: "Grab early morning loungers for sea days in the Gulf of Mexico!" },
-        { id: "climb", name: "Rock Climbing Wall", deck: "DECK 10 AFT", pos: new THREE.Vector3(105, 36, 0), desc: "Scale 40 feet above the ocean right on the aft funnel for exhilarating panoramic Caribbean views.", tip: "Climb at sunset while sailing away from Cozumel!" },
-        { id: "dining", name: "Windjammer & Dining Room", deck: "DECK 9 & DECK 4", pos: new THREE.Vector3(80, 24, 0), desc: "World-class dining from global buffets at Windjammer to elegant 3-course dinners in My Fair Lady dining room.", tip: "Formal night on Day 2 features Caribbean lobster tail!" },
-        { id: "theater", name: "Orpheum Theater & Casino", deck: "DECK 5/6 FWD", pos: new THREE.Vector3(-105, 18, 0), desc: "Broadway-style production shows, live comedy, and Casino Royale gaming action.", tip: "Get seats 15 minutes early for the Welcome Aboard Gala!" }
-      ];
-
-      const venueHotspotGroup = new THREE.Group();
-      shipGroup.add(venueHotspotGroup);
-
-      DECK_VENUES.forEach((v) => {
-        const pinGeo = new THREE.SphereGeometry(2.4, 16, 16);
-        const pinMat = new THREE.MeshStandardMaterial({
-          color: 0x00ddff,
-          emissive: 0x0088ff,
-          emissiveIntensity: 0.8,
-          roughness: 0.2
-        });
-        const pinMesh = new THREE.Mesh(pinGeo, pinMat);
-        pinMesh.position.copy(v.pos);
-        pinMesh.userData = { venue: v };
-        venueHotspotGroup.add(pinMesh);
-
-        // Pulsing ring
-        const ringGeo = new THREE.RingGeometry(2.8, 3.6, 24);
-        const ringMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
-        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-        ringMesh.rotation.x = Math.PI / 2;
-        ringMesh.position.copy(v.pos);
-        venueHotspotGroup.add(ringMesh);
-      });
-
-      const venueCard = document.getElementById("venue-card");
-      const venueDeck = document.getElementById("venue-deck");
-      const venueName = document.getElementById("venue-name");
-      const venueDesc = document.getElementById("venue-desc");
-      const venueTip = document.getElementById("venue-tip");
-      const venueCloseBtn = document.getElementById("venue-close-btn");
-
-      function showVenueCard(v) {
-        if (!venueCard) return;
-        venueDeck.textContent = v.deck;
-        venueName.textContent = v.name;
-        venueDesc.textContent = v.desc;
-        venueTip.innerHTML = `💡 <strong>Bolton Crew Tip:</strong> ${v.tip}`;
-        venueCard.classList.add("visible");
-      }
-
-      if (venueCloseBtn) {
-        venueCloseBtn.addEventListener("click", () => {
-          if (venueCard) venueCard.classList.remove("visible");
-        });
-      }
-
-      // Raycaster for clicking 3D Deck Pins
-      const raycaster = new THREE.Raycaster();
-      const mouse = new THREE.Vector2();
-
-      window.addEventListener("pointerdown", (e) => {
-        if (e.target.closest("#header, #left-panel, #toolbar, .map-modal, .roster-modal, #venue-card")) return;
-        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-
-        raycaster.setFromCamera(mouse, camera);
-        const intersects = raycaster.intersectObjects(venueHotspotGroup.children);
-        if (intersects.length > 0) {
-          const hit = intersects[0].object;
-          if (hit.userData && hit.userData.venue) {
-            showVenueCard(hit.userData.venue);
-          }
-        }
-      });
 
       // 7. Keyboard Hotkeys ([H] Horn, [C] Camera, [M] Map, [G] Guest Roster)
       window.addEventListener("keydown", (e) => {
@@ -6775,14 +6697,6 @@
             }
           });
         }
-
-        // Pulse 3D Deck Tour Venue Hotspot Rings
-        venueHotspotGroup.children.forEach((child, i) => {
-          if (child.geometry && child.geometry.type === "RingGeometry") {
-            const scale = 1.0 + Math.sin(t * 3.5 + i) * 0.18;
-            child.scale.set(scale, scale, 1);
-          }
-        });
 
         sunLight.position.set(
           shipGroup.position.x + 350,
