@@ -6913,8 +6913,11 @@
         // ----------------------------------------
         hudSpeed.textContent = `${Math.abs(shipState.speed).toFixed(1)} kts ${shipState.speed < -0.1 ? '(Astern)' : ''}`;
         
-        let degHeading = Math.round((-shipState.heading * (180 / Math.PI)) % 360);
-        if (degHeading < 0) degHeading += 360;
+        // Exact real-world nautical compass heading: 0° N, 90° E, 180° S, 270° W
+        // Forward vector in 3D world: (-cos(heading), 0, sin(heading))
+        // East = -cos(heading), North = -sin(heading)
+        const shipCompassRad = Math.atan2(-Math.cos(shipState.heading), -Math.sin(shipState.heading));
+        let degHeading = Math.round((shipCompassRad * (180 / Math.PI) + 360) % 360);
         hudHeading.textContent = `${degHeading.toString().padStart(3, "0")}°`;
 
         // Real-time nautical distance & GPS odometer
@@ -6941,17 +6944,17 @@
         navArrowMesh.lookAt(targetPort.worldX, navArrowGroup.position.y, targetPort.worldZ);
         navRingMesh.rotation.y = t * 1.5;
 
-        // Calculate Target World Angle & Relative Bearing to Ship
-        const targetHeading = Math.atan2(-dzToTarget, -dxToTarget);
-        let relativeBearing = targetHeading - shipState.heading;
+        // Calculate Target World Compass Angle & Relative Bearing to Ship
+        // East = dxToTarget, North = -dzToTarget
+        const targetCompassRad = Math.atan2(dxToTarget, -dzToTarget);
+        let targetCompassDeg = Math.round((targetCompassRad * (180 / Math.PI) + 360) % 360);
+
+        let relativeBearing = targetCompassRad - shipCompassRad;
         while (relativeBearing > Math.PI) relativeBearing -= Math.PI * 2;
         while (relativeBearing < -Math.PI) relativeBearing += Math.PI * 2;
 
         const relDeg = relativeBearing * (180 / Math.PI);
         const absRelDeg = Math.abs(relDeg);
-
-        let targetCompassDeg = Math.round((-targetHeading * (180 / Math.PI)) % 360);
-        if (targetCompassDeg < 0) targetCompassDeg += 360;
 
         // Update 2D Compass Needle rotation (relative to ship orientation)
         const waypointArrowEl = document.getElementById("waypoint-arrow");
