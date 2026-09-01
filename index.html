@@ -4294,7 +4294,7 @@
 
             autoRotate = true;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.85;
+            controls.autoRotateSpeed = 0.42;
             if (btnRotate) btnRotate.classList.add("active");
             userInteracting = false;
           }, 5000);
@@ -6184,7 +6184,7 @@
 
           autoRotate = true;
           controls.autoRotate = true;
-          controls.autoRotateSpeed = 0.9;
+          controls.autoRotateSpeed = 0.42;
           btnRotate.classList.add("active");
           userInteracting = false;
 
@@ -6445,7 +6445,7 @@
       btnRotate.addEventListener("click", () => {
         autoRotate = !autoRotate;
         controls.autoRotate = autoRotate;
-        controls.autoRotateSpeed = 1.0;
+        controls.autoRotateSpeed = 0.42;
         btnRotate.classList.toggle("active", autoRotate);
       });
 
@@ -7912,7 +7912,12 @@
           const offset = camera.position.clone().sub(controls.target);
           const currentLen = offset.length();
           if (currentLen > 0.001) {
-            offset.multiplyScalar(currentCamDistance / currentLen);
+            // When auto-rotating hands-off, smoothly elevate the camera pitch angle (~28° to 35° downward)
+            if (autoRotate && !userInteracting) {
+              const targetElevY = currentCamDistance * 0.45;
+              offset.y = THREE.MathUtils.lerp(offset.y, targetElevY, 1.2 * dt);
+            }
+            offset.normalize().multiplyScalar(currentCamDistance);
             camera.position.copy(controls.target).add(offset);
           }
         }
