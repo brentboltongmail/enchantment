@@ -1869,7 +1869,13 @@
         if (userInteractTimeout) clearTimeout(userInteractTimeout);
         userInteractTimeout = setTimeout(() => {
           userInteracting = false;
-        }, 1200);
+          if (!isFollowMode) {
+            autoRotate = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.85;
+            if (btnRotate) btnRotate.classList.add("active");
+          }
+        }, 5000);
       });
 
       // Ultra-smooth, slow, proportional wheel zooming (mouse wheel + macOS trackpads)
@@ -1880,7 +1886,13 @@
         if (userInteractTimeout) clearTimeout(userInteractTimeout);
         userInteractTimeout = setTimeout(() => {
           userInteracting = false;
-        }, 1200);
+          if (!isFollowMode) {
+            autoRotate = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.85;
+            if (btnRotate) btnRotate.classList.add("active");
+          }
+        }, 5000);
 
         // Normalize delta for mouse wheels vs precision trackpads
         let delta = e.deltaY;
@@ -4121,6 +4133,27 @@
 
       function startKeyIdleTimer() {
         resetKeyIdleTimer();
+        const anyKeyDown = Object.values(keysPressed).some(Boolean);
+        if (!anyKeyDown) {
+          keyIdleTimeout = setTimeout(() => {
+            // 5 seconds after no navigation input -> switch to Free Orbit and Auto-Rotate mode
+            if (typeof setCameraMode === "function") {
+              setCameraMode(0); // Free Orbit
+            } else {
+              isFollowMode = false;
+              if (btnCamMode) {
+                btnCamMode.textContent = "🌐 (C)amera: Orbit";
+                btnCamMode.classList.remove("active");
+              }
+            }
+
+            autoRotate = true;
+            controls.autoRotate = true;
+            controls.autoRotateSpeed = 0.85;
+            if (btnRotate) btnRotate.classList.add("active");
+            userInteracting = false;
+          }, 5000);
+        }
       }
 
       window.addEventListener("keydown", (e) => {
@@ -4129,15 +4162,17 @@
           userInteracting = false;
           resetKeyIdleTimer();
 
-          // When driving the ship with arrow keys, automatically return to Follow Mode and turn off Auto-Rotate
+          // When driving the ship with navigation keys, switch to Follow Mode and pause Auto-Rotate
           if (!isFollowMode || autoRotate) {
             isFollowMode = true;
-            btnCamMode.textContent = "🎥 Follow Mode";
-            btnCamMode.classList.add("active");
+            if (btnCamMode) {
+              btnCamMode.textContent = "🎥 (C)amera: Follow";
+              btnCamMode.classList.add("active");
+            }
 
             autoRotate = false;
             controls.autoRotate = false;
-            btnRotate.classList.remove("active");
+            if (btnRotate) btnRotate.classList.remove("active");
           }
         }
       });
