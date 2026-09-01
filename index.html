@@ -2004,19 +2004,19 @@
       const water = new THREE.Mesh(waterGeo, waterMat);
       water.rotation.x = -Math.PI / 2;
       water.position.y = 0;
-      water.receiveShadow = true;
+      water.receiveShadow = false;
       scene.add(water);
 
-      // Boundless 1,500km Far-field Ocean Plane extending seamlessly to the horizon
-      const farOceanGeo = new THREE.PlaneGeometry(1500000, 1500000, 4, 4);
+      // Boundless Far-Field Horizon Ocean Ring (Only exists outside the 8km active wave mesh, zero near-field clipping)
+      const farOceanGeo = new THREE.RingGeometry(3900, 1500000, 32);
       const farOceanMat = new THREE.MeshStandardMaterial({
-        color: 0x011c36,
-        roughness: 0.32,
-        metalness: 0.12
+        color: 0x085282,
+        roughness: 0.18,
+        metalness: 0.06
       });
       const farOcean = new THREE.Mesh(farOceanGeo, farOceanMat);
       farOcean.rotation.x = -Math.PI / 2;
-      farOcean.position.y = -0.6; // Seamless horizon transition
+      farOcean.position.y = 0;
       scene.add(farOcean);
 
       // ==========================================
