@@ -1964,7 +1964,7 @@
         window.innerWidth,
         window.innerHeight
       );
-      camera.position.set(280, 110, 160);
+      camera.position.set(240, 155, 200);
 
       const renderer = new THREE.WebGLRenderer({
         antialias: true,
@@ -1984,7 +1984,7 @@
       controls.target.set(0, 22, -60);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
-      controls.maxPolarAngle = Math.PI / 2 - 0.02;
+      controls.maxPolarAngle = Math.PI / 2 - 0.08;
       controls.minPolarAngle = 0.04;
       controls.enableZoom = false; // Disabled in favor of our custom smooth, controlled zoom engine
       controls.enablePan = false;
@@ -1997,7 +1997,7 @@
       let userInteractTimeout = null;
 
       controls.autoRotate = false;
-      controls.autoRotateSpeed = 0.85;
+      controls.autoRotateSpeed = 0.42; // Slow, majestic cinematic panoramic pan
 
       // Custom Silky Smooth & Calm Zoom Engine
       let currentCamDistance = 340;
@@ -2017,7 +2017,7 @@
           if (!isFollowMode) {
             autoRotate = true;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.85;
+            controls.autoRotateSpeed = 0.42;
             if (btnRotate) btnRotate.classList.add("active");
           }
         }, 5000);
@@ -2034,7 +2034,7 @@
           if (!isFollowMode) {
             autoRotate = true;
             controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.85;
+            controls.autoRotateSpeed = 0.42;
             if (btnRotate) btnRotate.classList.add("active");
           }
         }, 5000);
@@ -7437,41 +7437,61 @@
         // 10. Vessel at Center (Realistic Pointer & Heading Vector)
         minimapCtx.save();
         minimapCtx.translate(cx, cy);
-        // Ship heading: 0 is facing -X (West). In canvas coordinates, 0 is East (+X).
-        // So canvas angle = heading + Math.PI.
-        minimapCtx.rotate(heading + Math.PI);
 
-        // Heading projection line
+        // Exact 2D canvas travel direction matching 3D forwardVector
+        const fwd = new THREE.Vector3(-1, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), heading);
+        const canvasAngle = Math.atan2(fwd.z, fwd.x);
+        minimapCtx.rotate(canvasAngle);
+
+        // Heading projection line with forward arrow
         minimapCtx.beginPath();
         minimapCtx.moveTo(0, 0);
-        minimapCtx.lineTo(24, 0);
+        minimapCtx.lineTo(26, 0);
         minimapCtx.strokeStyle = "#00ff88";
-        minimapCtx.lineWidth = 2.0;
+        minimapCtx.lineWidth = 2.2;
         minimapCtx.stroke();
 
-        // Ship hull chevron / arrowhead
+        // Tip arrow of heading line
         minimapCtx.beginPath();
-        minimapCtx.moveTo(12, 0);       // Bow
-        minimapCtx.lineTo(-8, -6);      // Port Stern
-        minimapCtx.lineTo(-4, 0);       // Transom Center
-        minimapCtx.lineTo(-8, 6);       // Starboard Stern
+        minimapCtx.moveTo(26, 0);
+        minimapCtx.lineTo(20, -4);
+        minimapCtx.lineTo(20, 4);
+        minimapCtx.closePath();
+        minimapCtx.fillStyle = "#00ff88";
+        minimapCtx.fill();
+
+        // Realistic Cruiser Hull Silhouette (pivoted on vessel center)
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(14, 0);       // Bow Tip
+        minimapCtx.quadraticCurveTo(8, -6, -10, -5); // Port Side
+        minimapCtx.lineTo(-11, 0);      // Transom Center
+        minimapCtx.lineTo(-10, 5);      // Starboard Side
+        minimapCtx.quadraticCurveTo(8, 6, 14, 0);  // Starboard Bow
         minimapCtx.closePath();
 
         minimapCtx.fillStyle = "#ffffff";
         minimapCtx.fill();
-        minimapCtx.strokeStyle = "#00ff88";
-        minimapCtx.lineWidth = 1.5;
+        minimapCtx.strokeStyle = "#00ddff";
+        minimapCtx.lineWidth = 1.6;
         minimapCtx.stroke();
+
+        // Navigation Lights: Red Port (top), Green Starboard (bottom)
+        minimapCtx.beginPath();
+        minimapCtx.arc(4, -5, 1.8, 0, Math.PI * 2);
+        minimapCtx.fillStyle = "#ff3333"; // Red Port Light
+        minimapCtx.fill();
+
+        minimapCtx.beginPath();
+        minimapCtx.arc(4, 5, 1.8, 0, Math.PI * 2);
+        minimapCtx.fillStyle = "#00ff66"; // Green Starboard Light
+        minimapCtx.fill();
 
         minimapCtx.restore();
 
         minimapCtx.restore(); // Restore outer clip
 
-        // 11. Update Telemetry Labels
-        const forwardX = -Math.cos(heading);
-        const forwardZ = -Math.sin(heading);
-        let compassDeg = Math.round(Math.atan2(forwardX, -forwardZ) * (180 / Math.PI));
-        if (compassDeg < 0) compassDeg += 360;
+        // 11. Update Telemetry Labels (True Compass Heading: 0° N, 90° E, 180° S, 270° W)
+        let compassDeg = Math.round((Math.atan2(fwd.x, -fwd.z) * (180 / Math.PI) + 360) % 360);
 
         if (minimapHdgLabel) minimapHdgLabel.textContent = `HDG ${compassDeg.toString().padStart(3, "0")}°`;
         if (minimapSpdLabel) minimapSpdLabel.textContent = `${Math.abs(shipState.speed).toFixed(1)} KTS`;
