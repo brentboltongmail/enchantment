@@ -7308,17 +7308,18 @@
           if (isRight) targetRudder += 1.0;
         }
 
-        const accelRate = (shipState.targetSpeed > shipState.speed) ? 3.0 : 4.5;
+        const accelRate = (shipState.targetSpeed > shipState.speed) ? 3.5 : 5.0;
         shipState.speed = THREE.MathUtils.lerp(shipState.speed, shipState.targetSpeed, accelRate * dt);
-        shipState.rudder = THREE.MathUtils.lerp(shipState.rudder, targetRudder, 2.5 * dt);
+        shipState.rudder = THREE.MathUtils.lerp(shipState.rudder, targetRudder, 4.2 * dt);
 
         const absSpeed = Math.abs(shipState.speed);
         const speedRatio = Math.min(absSpeed / shipState.maxSpeed, 1.0);
-        const turnSpeedFactor = Math.pow(speedRatio, 1.35) * Math.sign(shipState.speed);
-        const maxTurnRate = 0.095;
+        // Responsive azimuth thruster + twin-screw turning across all cruise and harbor speeds
+        const turnSpeedFactor = Math.max(0.25, Math.pow(speedRatio, 0.85)) * Math.sign(shipState.speed);
+        const maxTurnRate = 0.190; // Doubled turning capability
         const targetTurnRate = -shipState.rudder * maxTurnRate * turnSpeedFactor;
 
-        shipState.turnRate = THREE.MathUtils.lerp(shipState.turnRate, targetTurnRate, 1.8 * dt);
+        shipState.turnRate = THREE.MathUtils.lerp(shipState.turnRate, targetTurnRate, 3.2 * dt);
 
         if (absSpeed > 0.1) {
           shipState.heading += shipState.turnRate * dt;
