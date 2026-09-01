@@ -5840,24 +5840,250 @@
         }
       });
 
-      // 8. Animated Bow-Riding Dolphins
+      // 8. Animated Realistic Bow-Riding Bottlenose Dolphins
       const dolphinGroup = new THREE.Group();
       shipGroup.add(dolphinGroup);
 
+      function createRealisticDolphin() {
+        const dolphin = new THREE.Group();
+
+        // 1. Procedural High-Res Dolphin Texture (Photorealistic Countershading)
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 256;
+        const ctx = canvas.getContext("2d");
+
+        // Gradient: Top dorsal (slate blue-grey) -> Flanks (medium ocean grey) -> Underbelly (cream white)
+        const grad = ctx.createLinearGradient(0, 0, 0, 256);
+        grad.addColorStop(0.0, "#222f3d"); // Dark dorsal cape
+        grad.addColorStop(0.35, "#3b4c5e"); // Upper flank
+        grad.addColorStop(0.55, "#687c92"); // Mid flank transition
+        grad.addColorStop(0.78, "#c6d7e6"); // Lower flank
+        grad.addColorStop(1.0, "#f0f6fc"); // Creamy white underbelly
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 512, 256);
+
+        // Dorsal Cape Pattern & Soft Mottling
+        ctx.fillStyle = "rgba(25, 35, 48, 0.45)";
+        ctx.beginPath();
+        ctx.ellipse(220, 60, 180, 50, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eye Spots (Left & Right)
+        ctx.fillStyle = "#11161d";
+        ctx.beginPath();
+        ctx.arc(100, 105, 4.5, 0, Math.PI * 2); // Left eye
+        ctx.arc(100, 150, 4.5, 0, Math.PI * 2); // Right eye
+        ctx.fill();
+
+        // Eye Highlight & Eye-to-Flipper Crease
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(99, 104, 1.2, 0, Math.PI * 2);
+        ctx.arc(99, 149, 1.2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Rostrum / Beak Tip & Mouth Line
+        ctx.strokeStyle = "rgba(30, 40, 50, 0.6)";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(10, 128);
+        ctx.lineTo(85, 128);
+        ctx.stroke();
+
+        // Blowhole Crescent
+        ctx.fillStyle = "#151e28";
+        ctx.beginPath();
+        ctx.arc(130, 55, 4, 0.2 * Math.PI, 0.8 * Math.PI, true);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#151e28";
+        ctx.stroke();
+
+        const dolphinTex = new THREE.CanvasTexture(canvas);
+        dolphinTex.wrapS = THREE.ClampToEdgeWrapping;
+        dolphinTex.wrapT = THREE.ClampToEdgeWrapping;
+
+        const dolphinSkinMat = new THREE.MeshStandardMaterial({
+          map: dolphinTex,
+          roughness: 0.16,
+          metalness: 0.06,
+          color: 0xffffff
+        });
+
+        const finMat = new THREE.MeshStandardMaterial({
+          color: 0x334455,
+          roughness: 0.20,
+          metalness: 0.05
+        });
+
+        // 2. Anatomical Torso & Head Mesh (Lofted Spline Body)
+        // Cross section points along body from Snout (X = -4.6) to Tail Base (X = 3.4)
+        const bodyPoints = [
+          new THREE.Vector2(0.08, -4.6), // Tip of rostrum
+          new THREE.Vector2(0.32, -4.2), // Mid beak
+          new THREE.Vector2(0.58, -3.6), // Base of beak / melon start
+          new THREE.Vector2(1.10, -2.8), // Melon & Head
+          new THREE.Vector2(1.42, -1.6), // Forechest & Pectoral girdle
+          new THREE.Vector2(1.50, 0.0),  // Maximum girth (mid-body)
+          new THREE.Vector2(1.36, 1.2),  // Behind dorsal fin
+          new THREE.Vector2(0.95, 2.4),  // Lumbar region
+          new THREE.Vector2(0.52, 3.4)   // Base of tail peduncle
+        ];
+
+        const bodyGeo = new THREE.LatheGeometry(bodyPoints, 24);
+        bodyGeo.rotateZ(Math.PI / 2); // Align length along X-axis (Snout = -X, Tail = +X)
+        
+        // Shape anatomical melon bulge and lateral hydrodynamic compression
+        const posAttr = bodyGeo.attributes.position;
+        for (let i = 0; i < posAttr.count; i++) {
+          const x = posAttr.getX(i);
+          let y = posAttr.getY(i);
+          let z = posAttr.getZ(i);
+
+          z *= 0.82; // Lateral fusiform narrowing
+          if (x < -2.2 && x > -3.8 && y > 0) {
+            y *= 1.18; // Prominent melon forehead
+          }
+          if (x < -3.6) {
+            y *= 0.65; // Streamlined beak
+            z *= 0.65;
+          }
+          posAttr.setY(i, y);
+          posAttr.setZ(i, z);
+        }
+        bodyGeo.computeVertexNormals();
+
+        const mainBodyMesh = new THREE.Mesh(bodyGeo, dolphinSkinMat);
+        dolphin.add(mainBodyMesh);
+
+        // 3. Curved Falcate Dorsal Fin
+        const dorsalShape = new THREE.Shape();
+        dorsalShape.moveTo(0, 0);
+        dorsalShape.quadraticCurveTo(0.6, 1.4, 0.2, 1.8); // Swept-back apex
+        dorsalShape.quadraticCurveTo(0.0, 1.2, -0.9, 0.4); // Concave trailing edge
+        dorsalShape.lineTo(-1.1, 0);
+        dorsalShape.closePath();
+
+        const dorsalGeo = new THREE.ExtrudeGeometry(dorsalShape, {
+          depth: 0.18,
+          bevelEnabled: true,
+          bevelSegments: 2,
+          steps: 1,
+          bevelSize: 0.06,
+          bevelThickness: 0.06
+        });
+        dorsalGeo.center();
+        const dorsalMesh = new THREE.Mesh(dorsalGeo, finMat);
+        dorsalMesh.position.set(0.1, 1.85, 0);
+        dorsalMesh.rotation.y = Math.PI / 2;
+        dolphin.add(dorsalMesh);
+
+        // 4. Pectoral Flippers (Left & Right Wing-like Hydrofoils)
+        const flipperShape = new THREE.Shape();
+        flipperShape.moveTo(0, 0);
+        flipperShape.quadraticCurveTo(0.8, -0.6, 1.8, -1.2); // Pointed curved tip
+        flipperShape.quadraticCurveTo(1.2, -0.7, 0.5, 0.2); // Trailing edge
+        flipperShape.closePath();
+
+        const flipperGeo = new THREE.ExtrudeGeometry(flipperShape, {
+          depth: 0.12,
+          bevelEnabled: true,
+          bevelSegments: 2,
+          steps: 1,
+          bevelSize: 0.04,
+          bevelThickness: 0.04
+        });
+
+        // Port Flipper
+        const leftFlipper = new THREE.Mesh(flipperGeo, finMat);
+        leftFlipper.position.set(-1.4, -0.55, 1.1);
+        leftFlipper.rotation.set(0.45, 0.25, -0.35);
+        dolphin.add(leftFlipper);
+
+        // Starboard Flipper
+        const rightFlipper = new THREE.Mesh(flipperGeo, finMat);
+        rightFlipper.position.set(-1.4, -0.55, -1.1);
+        rightFlipper.rotation.set(-0.45, -0.25, -0.35);
+        rightFlipper.scale.set(1, 1, -1); // Mirror for starboard
+        dolphin.add(rightFlipper);
+
+        // 5. Articulated Tail Peduncle & Flukes (Undulating Swimming Group)
+        const peduncleGroup = new THREE.Group();
+        peduncleGroup.position.set(3.2, 0, 0); // Hinged at posterior torso
+        dolphin.add(peduncleGroup);
+
+        const pedPoints = [
+          new THREE.Vector2(0.50, 0.0),
+          new THREE.Vector2(0.38, 0.8),
+          new THREE.Vector2(0.24, 1.6),
+          new THREE.Vector2(0.12, 2.3)
+        ];
+        const pedGeo = new THREE.LatheGeometry(pedPoints, 16);
+        pedGeo.rotateZ(-Math.PI / 2);
+        const pedPos = pedGeo.attributes.position;
+        for (let i = 0; i < pedPos.count; i++) {
+          pedPos.setZ(i, pedPos.getZ(i) * 0.55);
+          pedPos.setY(i, pedPos.getY(i) * 1.35);
+        }
+        pedGeo.computeVertexNormals();
+        const pedMesh = new THREE.Mesh(pedGeo, dolphinSkinMat);
+        pedMesh.position.set(0.8, 0, 0);
+        peduncleGroup.add(pedMesh);
+
+        // 6. Horizontal Tail Flukes (Caudal Fin with Median Notch)
+        const flukesGroup = new THREE.Group();
+        flukesGroup.position.set(2.3, 0, 0); // Hinged at tip of peduncle
+        peduncleGroup.add(flukesGroup);
+
+        const flukeShape = new THREE.Shape();
+        flukeShape.moveTo(0, 0); // Center root
+        flukeShape.quadraticCurveTo(0.6, 0.7, 1.6, 1.4); // Swept left wingtip
+        flukeShape.quadraticCurveTo(1.2, 0.2, 0.3, -0.2); // Trailing edge left
+        flukeShape.lineTo(0.08, -0.1); // Median notch cleft
+        flukeShape.lineTo(-0.08, -0.1);
+        flukeShape.quadraticCurveTo(-1.2, 0.2, -1.6, 1.4); // Swept right wingtip
+        flukeShape.quadraticCurveTo(-0.6, 0.7, 0, 0);
+        flukeShape.closePath();
+
+        const flukesGeo = new THREE.ExtrudeGeometry(flukeShape, {
+          depth: 0.10,
+          bevelEnabled: true,
+          bevelSegments: 2,
+          steps: 1,
+          bevelSize: 0.04,
+          bevelThickness: 0.04
+        });
+        flukesGeo.center();
+        const flukesMesh = new THREE.Mesh(flukesGeo, finMat);
+        flukesMesh.rotation.x = Math.PI / 2; // Lie completely horizontal!
+        flukesMesh.rotation.z = Math.PI / 2; // Sweep backwards along +X
+        flukesGroup.add(flukesMesh);
+
+        // Scale entire dolphin to ~3.2m adult bottlenose dolphin size
+        dolphin.scale.setScalar(1.25);
+
+        return {
+          group: dolphin,
+          peduncle: peduncleGroup,
+          flukes: flukesGroup,
+          leftFlipper: leftFlipper,
+          rightFlipper: rightFlipper
+        };
+      }
+
+      // Pod of 5 Bow-Riding Dolphins (Riding Port, Starboard & Center Bow Pressure Waves)
       const dolphinData = [
-        { side: -1, offsetZ: -28, phase: 0.0, speed: 3.2 },
-        { side: 1, offsetZ: 28, phase: Math.PI * 0.65, speed: 3.2 },
-        { side: -1, offsetZ: -42, phase: Math.PI * 1.3, speed: 3.2 }
+        { side: 1,  offsetX: -130, offsetZ: 28,  phase: 0.0,  speed: 2.8, leapHeight: 6.8, rollAmt: 0.35 },
+        { side: -1, offsetX: -132, offsetZ: -28, phase: 0.45, speed: 2.8, leapHeight: 6.5, rollAmt: -0.35 },
+        { side: 1,  offsetX: -145, offsetZ: 42,  phase: 1.8,  speed: 3.1, leapHeight: 5.8, rollAmt: 0.20 },
+        { side: -1, offsetX: -148, offsetZ: -40, phase: 2.3,  speed: 3.0, leapHeight: 6.2, rollAmt: -0.25 },
+        { side: 0,  offsetX: -160, offsetZ: 0,   phase: 3.6,  speed: 2.6, leapHeight: 7.2, rollAmt: 0.00 }
       ];
 
-      const dolphinGeo = new THREE.ConeGeometry(1.6, 7.5, 8);
-      dolphinGeo.rotateZ(Math.PI / 2);
-      const dolphinMat = new THREE.MeshStandardMaterial({ color: 0x224466, roughness: 0.3, metalness: 0.4 });
-
-      const dolphinMeshes = dolphinData.map((d) => {
-        const mesh = new THREE.Mesh(dolphinGeo, dolphinMat);
-        dolphinGroup.add(mesh);
-        return mesh;
+      const dolphinInstances = dolphinData.map(() => {
+        const dObj = createRealisticDolphin();
+        dolphinGroup.add(dObj.group);
+        return dObj;
       });
 
       // ==========================================
@@ -6336,21 +6562,65 @@
           }
         }
 
-        // Animate Bow-Riding Dolphins
-        const dolphinActive = absSpeed > 8.0;
+        // ----------------------------------------
+        // Animate Realistic Bow-Riding Dolphins (Pod of 5)
+        // ----------------------------------------
+        const dolphinActive = absSpeed > 6.0;
         dolphinGroup.visible = dolphinActive;
         if (dolphinActive) {
           dolphinData.forEach((d, idx) => {
-            const m = dolphinMeshes[idx];
-            const cycle = (t * d.speed + d.phase) % (Math.PI * 2);
-            const leapY = Math.sin(cycle);
-            const isAbove = leapY > 0;
-            const forwardX = -135 + Math.cos(cycle) * 12;
-            const currentZ = d.offsetZ + Math.sin(cycle * 0.5) * 4;
+            const dolphinObj = dolphinInstances[idx];
+            if (!dolphinObj) return;
 
-            m.position.set(forwardX, Math.max(-2, leapY * 5.5), currentZ);
-            m.rotation.z = isAbove ? -leapY * 0.4 : 0;
-            m.rotation.y = d.side > 0 ? 0.15 : -0.15;
+            const m = dolphinObj.group;
+            const cycle = (t * d.speed + d.phase) % (Math.PI * 2);
+
+            // Realistic ballistic porpoising leap curve:
+            // When sin(cycle) > 0, dolphin leaps above surface (Y > 0)
+            // When sin(cycle) <= 0, dolphin glides underwater beneath bow wave
+            const leapSin = Math.sin(cycle);
+            const isAirborne = leapSin > 0;
+
+            // Height: In air reaches +leapHeight; underwater cruises at -1.8m to -3.5m
+            const posY = isAirborne ? Math.sin(cycle) * d.leapHeight : Math.sin(cycle) * 2.8 - 0.8;
+
+            // Forward surge: Accelerates forward during leap apex, pulls back slightly on re-entry
+            const forwardX = d.offsetX + Math.cos(cycle) * 14.0;
+            const currentZ = d.offsetZ + Math.sin(cycle * 0.7) * 3.5;
+
+            m.position.set(forwardX, posY, currentZ);
+
+            // Anatomical Pitch: Points up as it breaches, levels at apex, pitches down for clean dive entry
+            const pitch = isAirborne ? -Math.cos(cycle) * 0.65 : -Math.cos(cycle) * 0.25;
+            m.rotation.z = pitch;
+
+            // Body Bank / Roll: Tilts gracefully into its turn
+            const roll = isAirborne ? d.rollAmt * Math.sin(cycle) : d.rollAmt * 0.4;
+            m.rotation.x = roll;
+
+            // Yaw: Angles slightly outward away from the bow
+            m.rotation.y = d.side > 0 ? 0.12 : (d.side < 0 ? -0.12 : 0);
+
+            // Biological Swimming Undulation (Fluke & Tail flex):
+            // Rapid powerful vertical tail beats while underwater, relaxed graceful arch in air
+            const flukeFreq = isAirborne ? d.speed * 1.5 : d.speed * 3.8;
+            const flukeAmp = isAirborne ? 0.18 : 0.42;
+            const pedAngle = Math.sin(t * flukeFreq + d.phase * 2) * flukeAmp;
+            dolphinObj.peduncle.rotation.z = pedAngle;
+            // Flukes lag behind by 90 degrees phase to create fluid hydrodynamic propulsion
+            dolphinObj.flukes.rotation.z = Math.sin(t * flukeFreq + d.phase * 2 - Math.PI * 0.5) * (flukeAmp * 1.25);
+
+            // Pectoral flippers respond to banking
+            dolphinObj.leftFlipper.rotation.x = 0.45 + roll * 0.5;
+            dolphinObj.rightFlipper.rotation.x = -0.45 - roll * 0.5;
+
+            // Water Surface Entry/Exit Splash Particles
+            if (isAirborne && leapSin < 0.22 && Math.random() < 0.25) {
+              const splashWorldPos = shipGroup.position.clone().add(
+                new THREE.Vector3(forwardX, 0.5, currentZ).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
+              );
+              spawnSpray(splashWorldPos, new THREE.Vector3((Math.random() - 0.5) * 4, 4 + Math.random() * 4, (Math.random() - 0.5) * 4), 16, 1.2, 0.8);
+            }
           });
         }
 
