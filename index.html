@@ -1952,22 +1952,12 @@
           `
           #include <color_fragment>
 
-          // Dynamic Whitecap Seafoam on High Wave Peaks & Morphing Wave Crests
+          // Clean, realistic ocean depth gradient without white splotches
           float crestElevation = vOceanWorldPos.y;
-          float crestFactor = smoothstep(2.4, 5.0, crestElevation);
-
-          float waveInterference = sin(vOceanWorldPos.x * 0.18 + uTime * 0.65) * cos(vOceanWorldPos.z * 0.18 - uTime * 0.55);
-          float morphChop = sin((vOceanWorldPos.x * 0.42 + vOceanWorldPos.z * 0.38) + sin(uTime * 0.9) * 2.0);
-          float dynamicFoam = smoothstep(0.38, 0.88, (waveInterference * 0.55 + morphChop * 0.45) * 0.5 + 0.5);
-
-          float whitecap = crestFactor * dynamicFoam;
           vec3 deepWater = vec3(0.02, 0.16, 0.32);
-          vec3 crestWater = vec3(0.06, 0.36, 0.52);
-          vec3 whitecapColor = vec3(0.92, 0.97, 1.0);
-
-          float sssFactor = smoothstep(-2.0, 4.5, crestElevation) * 0.35;
-          diffuseColor.rgb = mix(deepWater, crestWater, sssFactor);
-          diffuseColor.rgb = mix(diffuseColor.rgb, whitecapColor, whitecap * 0.90);
+          vec3 crestWater = vec3(0.04, 0.28, 0.46);
+          float depthFactor = smoothstep(-2.5, 4.0, crestElevation) * 0.35;
+          diffuseColor.rgb = mix(deepWater, crestWater, depthFactor);
           `
         );
       };
