@@ -1499,6 +1499,130 @@
       .tbanner-text { display: flex; flex-direction: column; }
       .tbanner-title { font-size: 14px; font-weight: 700; color: #ffd700; }
       .tbanner-desc { font-size: 11px; color: #cde2f8; }
+
+      /* Tactical Radar Minimap (Bottom Right) */
+      .minimap-container {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 224px;
+        height: 256px;
+        background: radial-gradient(circle at center, rgba(8, 26, 48, 0.94) 0%, rgba(4, 14, 26, 0.98) 100%);
+        border: 1.5px solid rgba(0, 221, 255, 0.5);
+        border-radius: 16px;
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 221, 255, 0.25);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        user-select: none;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+      .minimap-container:hover {
+        border-color: rgba(0, 255, 200, 0.8);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.9), 0 0 28px rgba(0, 255, 200, 0.4);
+      }
+      .minimap-header {
+        height: 32px;
+        padding: 0 10px;
+        background: rgba(12, 34, 60, 0.85);
+        border-bottom: 1px solid rgba(0, 221, 255, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .minimap-title-left {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .minimap-radar-blip {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #00ff88;
+        box-shadow: 0 0 8px #00ff88;
+        animation: radarPulse 1.8s infinite;
+      }
+      @keyframes radarPulse {
+        0% { transform: scale(0.7); opacity: 1; }
+        50% { transform: scale(1.3); opacity: 0.4; }
+        100% { transform: scale(0.7); opacity: 1; }
+      }
+      .minimap-title {
+        font-size: 10px;
+        font-weight: 800;
+        color: #00e5ff;
+        letter-spacing: 1px;
+      }
+      .minimap-controls {
+        display: flex;
+        gap: 4px;
+      }
+      .minimap-btn {
+        width: 22px;
+        height: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: #d0e4ff;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        transition: all 0.15s ease;
+      }
+      .minimap-btn:hover {
+        background: #0077ff;
+        border-color: #00ddff;
+        color: #ffffff;
+      }
+      .minimap-canvas-wrap {
+        position: relative;
+        width: 224px;
+        height: 224px;
+        cursor: pointer;
+      }
+      #minimap-canvas {
+        width: 224px;
+        height: 224px;
+        display: block;
+      }
+      .minimap-range-label {
+        position: absolute;
+        bottom: 6px;
+        left: 8px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #72a9e6;
+        pointer-events: none;
+        text-shadow: 0 1px 3px #000;
+      }
+      .minimap-hdg-label {
+        position: absolute;
+        top: 6px;
+        left: 8px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #00ff88;
+        pointer-events: none;
+        text-shadow: 0 1px 3px #000;
+      }
+      .minimap-spd-label {
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #00ddff;
+        pointer-events: none;
+        text-shadow: 0 1px 3px #000;
+      }
     </style>
   </head>
   <body>
@@ -1613,6 +1737,27 @@
       <button id="btn-atmo" class="hud-btn" title="Time of Day (Press 'T')">☀️ (T)ime: Noon</button>
       <button id="btn-rotate" class="hud-btn active" title="Auto-Rotate (Press 'O')">🔄 (O)rbit</button>
       <button id="btn-stop-engines" class="hud-btn" style="background: linear-gradient(135deg, rgba(220, 20, 60, 0.55), rgba(160, 10, 30, 0.55)); border-color: rgba(255, 80, 80, 0.65); color: #fff; font-weight: 700;" title="Stop Engines (Press 'X')">🛑 (X) Stop</button>
+    </div>
+
+    <!-- Real-Time Tactical Radar Minimap (Bottom Right) -->
+    <div id="minimap-container" class="minimap-container" title="Tactical Radar Minimap (Click to open full Cruise Map)">
+      <div class="minimap-header">
+        <div class="minimap-title-left">
+          <span class="minimap-radar-blip"></span>
+          <span class="minimap-title">TACTICAL RADAR</span>
+        </div>
+        <div class="minimap-controls">
+          <button id="minimap-zoom-in" class="minimap-btn" title="Zoom In">+</button>
+          <button id="minimap-zoom-out" class="minimap-btn" title="Zoom Out">-</button>
+          <button id="minimap-expand" class="minimap-btn" title="Expand Full Map">⛶</button>
+        </div>
+      </div>
+      <div class="minimap-canvas-wrap">
+        <canvas id="minimap-canvas" width="224" height="224"></canvas>
+        <div class="minimap-range-label" id="minimap-range-label">RNG 25 NM</div>
+        <div class="minimap-hdg-label" id="minimap-hdg-label">HDG 214°</div>
+        <div class="minimap-spd-label" id="minimap-spd-label">0.0 KTS</div>
+      </div>
     </div>
 
     <!-- Harbor Docking Radar HUD -->
@@ -7037,6 +7182,302 @@
       });
 
       // ==========================================
+      // 8.8. TACTICAL RADAR MINIMAP SYSTEM (Bottom Right)
+      // ==========================================
+      const minimapCanvas = document.getElementById("minimap-canvas");
+      const minimapCtx = minimapCanvas ? minimapCanvas.getContext("2d") : null;
+      const minimapContainer = document.getElementById("minimap-container");
+      const minimapRangeLabel = document.getElementById("minimap-range-label");
+      const minimapHdgLabel = document.getElementById("minimap-hdg-label");
+      const minimapSpdLabel = document.getElementById("minimap-spd-label");
+      const btnMinimapZoomIn = document.getElementById("minimap-zoom-in");
+      const btnMinimapZoomOut = document.getElementById("minimap-zoom-out");
+      const btnMinimapExpand = document.getElementById("minimap-expand");
+
+      const MINIMAP_ZOOM_LEVELS = [
+        { nm: 8, units: 6500, label: "RNG 8 NM" },
+        { nm: 25, units: 18000, label: "RNG 25 NM" },
+        { nm: 70, units: 52000, label: "RNG 70 NM" },
+        { nm: 200, units: 140000, label: "RNG 200 NM" }
+      ];
+      let minimapZoomIdx = 1; // Default to 25 NM
+
+      if (btnMinimapZoomIn) {
+        btnMinimapZoomIn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (minimapZoomIdx > 0) {
+            minimapZoomIdx--;
+            if (minimapRangeLabel) minimapRangeLabel.textContent = MINIMAP_ZOOM_LEVELS[minimapZoomIdx].label;
+          }
+        });
+      }
+
+      if (btnMinimapZoomOut) {
+        btnMinimapZoomOut.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (minimapZoomIdx < MINIMAP_ZOOM_LEVELS.length - 1) {
+            minimapZoomIdx++;
+            if (minimapRangeLabel) minimapRangeLabel.textContent = MINIMAP_ZOOM_LEVELS[minimapZoomIdx].label;
+          }
+        });
+      }
+
+      if (btnMinimapExpand) {
+        btnMinimapExpand.addEventListener("click", (e) => {
+          e.stopPropagation();
+          openMap();
+        });
+      }
+
+      if (minimapContainer) {
+        minimapContainer.addEventListener("click", () => {
+          openMap();
+        });
+      }
+
+      // Pre-defined Geographic Landmass Polygons in Three.js World Coordinates (+X=East, +Z=South)
+      const MINIMAP_LANDMASSES = [
+        // Florida Mainland
+        [
+          { x: -3000, z: -18000 }, { x: 18000, z: -18000 }, { x: 18000, z: 18000 },
+          { x: 14000, z: 18000 }, { x: -2000, z: 1200 }, { x: -2600, z: -1200 }, { x: -3000, z: -18000 }
+        ],
+        // Pinellas Peninsula (St. Pete)
+        [
+          { x: -10000, z: -8500 }, { x: -3000, z: -8500 }, { x: -3000, z: -1400 },
+          { x: -7500, z: -1400 }, { x: -10000, z: -4000 }
+        ],
+        // Yucatan & Central American Continuous Coast
+        [
+          { x: -45000, z: 33000 }, { x: -25000, z: 34000 }, { x: -26850, z: 45000 },
+          { x: -28850, z: 51500 }, { x: -31850, z: 58000 }, { x: -33000, z: 64000 },
+          { x: -24000, z: 66000 }, { x: -14000, z: 71000 }, { x: -45000, z: 72000 }
+        ],
+        // Cozumel Island
+        [
+          { x: -25200, z: 39600 }, { x: -23800, z: 39600 },
+          { x: -23800, z: 43200 }, { x: -25200, z: 43200 }
+        ],
+        // Roatan Island
+        [
+          { x: -24500, z: 63100 }, { x: -20300, z: 63100 },
+          { x: -20300, z: 64700 }, { x: -24500, z: 64700 }
+        ],
+        // Western Cuba
+        [
+          { x: -14000, z: 30800 }, { x: -4000, z: 30800 },
+          { x: -4000, z: 36200 }, { x: -14000, z: 36200 }
+        ]
+      ];
+
+      function renderMinimap(time) {
+        if (!minimapCtx || !minimapCanvas) return;
+
+        const w = minimapCanvas.width;
+        const h = minimapCanvas.height;
+        const cx = w / 2;
+        const cy = h / 2;
+        const radius = w * 0.46;
+
+        const zoom = MINIMAP_ZOOM_LEVELS[minimapZoomIdx];
+        const scale = radius / zoom.units; // Pixels per Three.js unit
+
+        const shipX = shipGroup.position.x;
+        const shipZ = shipGroup.position.z;
+        const heading = shipState.heading;
+
+        // Clear canvas
+        minimapCtx.clearRect(0, 0, w, h);
+
+        // 1. Radar Circular Display Mask
+        minimapCtx.save();
+        minimapCtx.beginPath();
+        minimapCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+        minimapCtx.clip();
+
+        // Background dark nautical ocean gradient
+        const bgGrad = minimapCtx.createRadialGradient(cx, cy, 10, cx, cy, radius);
+        bgGrad.addColorStop(0, "#06182c");
+        bgGrad.addColorStop(1, "#020a14");
+        minimapCtx.fillStyle = bgGrad;
+        minimapCtx.fillRect(0, 0, w, h);
+
+        // World to Minimap projection helper
+        function toMap(x, z) {
+          return {
+            x: cx + (x - shipX) * scale,
+            y: cy + (z - shipZ) * scale
+          };
+        }
+
+        // 2. Render Landmasses & Islands
+        minimapCtx.fillStyle = "rgba(18, 48, 38, 0.9)";
+        minimapCtx.strokeStyle = "#00ffcc";
+        minimapCtx.lineWidth = 1.2;
+
+        MINIMAP_LANDMASSES.forEach(poly => {
+          minimapCtx.beginPath();
+          poly.forEach((pt, idx) => {
+            const m = toMap(pt.x, pt.z);
+            if (idx === 0) minimapCtx.moveTo(m.x, m.y);
+            else minimapCtx.lineTo(m.x, m.y);
+          });
+          minimapCtx.closePath();
+          minimapCtx.fill();
+          minimapCtx.stroke();
+        });
+
+        // 3. Render Cruise Route Legs (Dashed Gold)
+        minimapCtx.beginPath();
+        minimapCtx.setLineDash([4, 4]);
+        minimapCtx.strokeStyle = "rgba(255, 200, 0, 0.45)";
+        minimapCtx.lineWidth = 1.5;
+        CRUISE_PORTS.forEach((p, idx) => {
+          const m = toMap(p.worldX, p.worldZ);
+          if (idx === 0) minimapCtx.moveTo(m.x, m.y);
+          else minimapCtx.lineTo(m.x, m.y);
+        });
+        minimapCtx.stroke();
+        minimapCtx.setLineDash([]);
+
+        // 4. Render Persistent Voyage GPS Trail (Neon Cyan)
+        if (vesselGpsTrail && vesselGpsTrail.length > 1) {
+          minimapCtx.beginPath();
+          minimapCtx.strokeStyle = "#00f0ff";
+          minimapCtx.lineWidth = 2.0;
+          minimapCtx.shadowColor = "#00f0ff";
+          minimapCtx.shadowBlur = 4;
+
+          vesselGpsTrail.forEach((gps, idx) => {
+            const wx = (gps[1] - (-82.4572)) * 5500.0;
+            const wz = (27.9506 - gps[0]) * 5500.0;
+            const m = toMap(wx, wz);
+            if (idx === 0) minimapCtx.moveTo(m.x, m.y);
+            else minimapCtx.lineTo(m.x, m.y);
+          });
+          minimapCtx.stroke();
+          minimapCtx.shadowBlur = 0;
+        }
+
+        // 5. Line to Active Next Destination Waypoint
+        const nextPort = CRUISE_PORTS[currentWaypointIndex];
+        if (nextPort) {
+          const pm = toMap(nextPort.worldX, nextPort.worldZ);
+          minimapCtx.beginPath();
+          minimapCtx.moveTo(cx, cy);
+          minimapCtx.lineTo(pm.x, pm.y);
+          minimapCtx.strokeStyle = "rgba(0, 255, 136, 0.6)";
+          minimapCtx.lineWidth = 1.2;
+          minimapCtx.setLineDash([3, 3]);
+          minimapCtx.stroke();
+          minimapCtx.setLineDash([]);
+        }
+
+        // 6. Port Markers
+        CRUISE_PORTS.forEach((p, idx) => {
+          const m = toMap(p.worldX, p.worldZ);
+          const isNext = (idx === currentWaypointIndex);
+
+          minimapCtx.beginPath();
+          minimapCtx.arc(m.x, m.y, isNext ? 4.5 : 3.0, 0, Math.PI * 2);
+          minimapCtx.fillStyle = isNext ? "#00ff88" : "#00ddff";
+          minimapCtx.fill();
+          minimapCtx.strokeStyle = "#ffffff";
+          minimapCtx.lineWidth = 1;
+          minimapCtx.stroke();
+
+          // Port Label if in view
+          const dToCenter = Math.hypot(m.x - cx, m.y - cy);
+          if (dToCenter < radius - 10) {
+            minimapCtx.fillStyle = isNext ? "#00ff88" : "#bde3ff";
+            minimapCtx.font = "bold 9px sans-serif";
+            minimapCtx.textAlign = "center";
+            minimapCtx.fillText(p.name.split(",")[0], m.x, m.y - 7);
+          }
+        });
+
+        // 7. Concentric Radar Rings & Crosshairs
+        minimapCtx.strokeStyle = "rgba(0, 221, 255, 0.22)";
+        minimapCtx.lineWidth = 1;
+        [0.33, 0.66, 1.0].forEach(rFrac => {
+          minimapCtx.beginPath();
+          minimapCtx.arc(cx, cy, radius * rFrac, 0, Math.PI * 2);
+          minimapCtx.stroke();
+        });
+
+        // Crosshairs
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(cx - radius, cy);
+        minimapCtx.lineTo(cx + radius, cy);
+        minimapCtx.moveTo(cx, cy - radius);
+        minimapCtx.lineTo(cx, cy + radius);
+        minimapCtx.stroke();
+
+        // 8. Rotating Radar Sweep Line
+        const sweepAngle = (time * 1.5) % (Math.PI * 2);
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(cx, cy);
+        minimapCtx.lineTo(cx + Math.cos(sweepAngle) * radius, cy + Math.sin(sweepAngle) * radius);
+        minimapCtx.strokeStyle = "rgba(0, 255, 150, 0.35)";
+        minimapCtx.lineWidth = 1.5;
+        minimapCtx.stroke();
+
+        // 9. Compass Cardinals (North / South / East / West)
+        minimapCtx.font = "bold 10px sans-serif";
+        minimapCtx.textAlign = "center";
+        minimapCtx.textBaseline = "middle";
+
+        minimapCtx.fillStyle = "#00ffcc"; // North
+        minimapCtx.fillText("N", cx, cy - radius + 10);
+        minimapCtx.fillStyle = "rgba(0, 221, 255, 0.6)";
+        minimapCtx.fillText("S", cx, cy + radius - 10);
+        minimapCtx.fillText("E", cx + radius - 10, cy);
+        minimapCtx.fillText("W", cx - radius + 10, cy);
+
+        // 10. Vessel at Center (Realistic Pointer & Heading Vector)
+        minimapCtx.save();
+        minimapCtx.translate(cx, cy);
+        // Ship heading: 0 is facing -X (West). In canvas coordinates, 0 is East (+X).
+        // So canvas angle = heading + Math.PI.
+        minimapCtx.rotate(heading + Math.PI);
+
+        // Heading projection line
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(0, 0);
+        minimapCtx.lineTo(24, 0);
+        minimapCtx.strokeStyle = "#00ff88";
+        minimapCtx.lineWidth = 2.0;
+        minimapCtx.stroke();
+
+        // Ship hull chevron / arrowhead
+        minimapCtx.beginPath();
+        minimapCtx.moveTo(12, 0);       // Bow
+        minimapCtx.lineTo(-8, -6);      // Port Stern
+        minimapCtx.lineTo(-4, 0);       // Transom Center
+        minimapCtx.lineTo(-8, 6);       // Starboard Stern
+        minimapCtx.closePath();
+
+        minimapCtx.fillStyle = "#ffffff";
+        minimapCtx.fill();
+        minimapCtx.strokeStyle = "#00ff88";
+        minimapCtx.lineWidth = 1.5;
+        minimapCtx.stroke();
+
+        minimapCtx.restore();
+
+        minimapCtx.restore(); // Restore outer clip
+
+        // 11. Update Telemetry Labels
+        const forwardX = -Math.cos(heading);
+        const forwardZ = -Math.sin(heading);
+        let compassDeg = Math.round(Math.atan2(forwardX, -forwardZ) * (180 / Math.PI));
+        if (compassDeg < 0) compassDeg += 360;
+
+        if (minimapHdgLabel) minimapHdgLabel.textContent = `HDG ${compassDeg.toString().padStart(3, "0")}°`;
+        if (minimapSpdLabel) minimapSpdLabel.textContent = `${Math.abs(shipState.speed).toFixed(1)} KTS`;
+      }
+
+      // ==========================================
       // 9. LAND COLLISION & GRACEFUL SHORELINE DEFLECTION SYSTEM
       // ==========================================
       const LAND_OBSTACLES = [
@@ -8024,6 +8465,9 @@
 
         // Update Harbor Docking Radar & Score Tracking
         updateDockingHUD();
+
+        // Render Real-Time Tactical Radar Minimap
+        renderMinimap(t);
 
         controls.update();
         renderer.render(scene, camera);
