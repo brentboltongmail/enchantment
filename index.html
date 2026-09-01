@@ -3648,29 +3648,18 @@
 
           this.trailCount = 30;
           this.trailPositions = new Float32Array(this.trailCount * 3);
-          this.reflectPositions = new Float32Array(this.trailCount * 3);
           this.trailColors = new Float32Array(this.trailCount * 3);
           this.trailSizes = new Float32Array(this.trailCount);
-          this.reflectColors = new Float32Array(this.trailCount * 3);
 
           for (let i = 0; i < this.trailCount; i++) {
             this.trailPositions[i * 3] = this.pos.x;
             this.trailPositions[i * 3 + 1] = this.pos.y;
             this.trailPositions[i * 3 + 2] = this.pos.z;
 
-            this.reflectPositions[i * 3] = this.pos.x;
-            this.reflectPositions[i * 3 + 1] = -this.pos.y;
-            this.reflectPositions[i * 3 + 2] = this.pos.z;
-
             const c = new THREE.Color(i === 0 ? 0xffffff : colorPalette[0]);
             this.trailColors[i * 3] = c.r;
             this.trailColors[i * 3 + 1] = c.g;
             this.trailColors[i * 3 + 2] = c.b;
-
-            // Soft attenuated water reflection color
-            this.reflectColors[i * 3] = c.r * 0.35;
-            this.reflectColors[i * 3 + 1] = c.g * 0.35;
-            this.reflectColors[i * 3 + 2] = c.b * 0.35;
 
             this.trailSizes[i] = (1 - i / this.trailCount) * 2.8 * size;
           }
@@ -3691,24 +3680,6 @@
           this.mesh = new THREE.Points(this.geo, this.mat);
           scene.add(this.mesh);
 
-          this.reflectGeo = new THREE.BufferGeometry();
-          this.reflectGeo.setAttribute("position", new THREE.BufferAttribute(this.reflectPositions, 3));
-          this.reflectGeo.setAttribute("color", new THREE.BufferAttribute(this.reflectColors, 3));
-          this.reflectGeo.setAttribute("size", new THREE.BufferAttribute(this.trailSizes, 1));
-
-          this.reflectMat = new THREE.PointsMaterial({
-            size: 1.6 * size,
-            map: streamerTexture,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            depthTest: false,
-            vertexColors: true,
-            opacity: 0.25
-          });
-          this.reflectMesh = new THREE.Points(this.reflectGeo, this.reflectMat);
-          scene.add(this.reflectMesh);
-
           // Mortar muzzle flash at launch
           triggerFireworkFlash(startPos, 0xffcc66, 16.0);
         }
@@ -3719,37 +3690,17 @@
           this.vel.y -= this.gravity * (dt * 60);
 
           const pos = this.geo.attributes.position.array;
-          const refPos = this.reflectGeo.attributes.position.array;
-
-          const camX = camera.position.x;
-          const camY = Math.max(camera.position.y, 25.0);
-          const camZ = camera.position.z;
 
           for (let i = this.trailCount - 1; i > 0; i--) {
             pos[i * 3] = pos[(i - 1) * 3] + (Math.random() - 0.5) * 0.35;
             pos[i * 3 + 1] = pos[(i - 1) * 3 + 1] - 0.28;
             pos[i * 3 + 2] = pos[(i - 1) * 3 + 2] + (Math.random() - 0.5) * 0.35;
-
-            const trailPy = Math.max(pos[i * 3 + 1], 1.0);
-            const specT = trailPy / (trailPy + camY);
-            const ripX = Math.sin(this.age * 3.0 + i * 0.4) * 4.5;
-            const ripZ = Math.cos(this.age * 2.5 + i * 0.4) * 4.5;
-            refPos[i * 3] = THREE.MathUtils.lerp(pos[i * 3], camX, specT * 0.78) + ripX;
-            refPos[i * 3 + 1] = 0.45;
-            refPos[i * 3 + 2] = THREE.MathUtils.lerp(pos[i * 3 + 2], camZ, specT * 0.78) + ripZ;
           }
           pos[0] = this.pos.x;
           pos[1] = this.pos.y;
           pos[2] = this.pos.z;
 
-          const headPy = Math.max(this.pos.y, 1.0);
-          const headSpecT = headPy / (headPy + camY);
-          refPos[0] = THREE.MathUtils.lerp(this.pos.x, camX, headSpecT * 0.78) + Math.sin(this.age * 3.0) * 3.5;
-          refPos[1] = 0.45;
-          refPos[2] = THREE.MathUtils.lerp(this.pos.z, camZ, headSpecT * 0.78) + Math.cos(this.age * 2.5) * 3.5;
-
           this.geo.attributes.position.needsUpdate = true;
-          this.reflectGeo.attributes.position.needsUpdate = true;
 
           if (this.vel.y <= 0.15 || this.pos.y >= this.targetY || this.age >= this.flightDuration) {
             this.explode();
@@ -3764,11 +3715,8 @@
         dispose() {
           this.dead = true;
           scene.remove(this.mesh);
-          scene.remove(this.reflectMesh);
           this.geo.dispose();
           this.mat.dispose();
-          this.reflectGeo.dispose();
-          this.reflectMat.dispose();
         }
       }
 
@@ -3848,7 +3796,6 @@
 
           this.particleCount = Math.floor(baseCount * (this.style === "kamuro_streamer" ? sizeMult * 1.25 : sizeMult));
           const positions = new Float32Array(this.particleCount * 3);
-          const reflectPositions = new Float32Array(this.particleCount * 3);
           const colors = new Float32Array(this.particleCount * 3);
 
           const ringTiltNormal = new THREE.Vector3(
@@ -3865,10 +3812,6 @@
             positions[i * 3] = pos.x;
             positions[i * 3 + 1] = pos.y;
             positions[i * 3 + 2] = pos.z;
-
-            reflectPositions[i * 3] = pos.x;
-            reflectPositions[i * 3 + 1] = -pos.y;
-            reflectPositions[i * 3 + 2] = pos.z;
 
             let vx = 0, vy = 0, vz = 0;
 
@@ -4009,55 +3952,6 @@
           this.trailMesh = new THREE.Points(this.trailGeo, this.trailMat);
           scene.add(this.trailMesh);
 
-          // 3. Specular Water Surface Reflection for Stars (Soft, attenuated reflection)
-          const reflectColors = new Float32Array(this.particleCount * 3);
-          for (let i = 0; i < this.particleCount * 3; i++) {
-            reflectColors[i] = colors[i] * 0.32; // Attenuate color intensity
-          }
-
-          this.reflectGeo = new THREE.BufferGeometry();
-          this.reflectGeo.setAttribute("position", new THREE.BufferAttribute(reflectPositions, 3));
-          this.reflectGeo.setAttribute("color", new THREE.BufferAttribute(reflectColors, 3));
-
-          this.reflectMat = new THREE.PointsMaterial({
-            size: (this.style === "kamuro_streamer" ? 1.6 : 1.2) * sizeMult,
-            map: fireworkTexture,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            depthTest: false,
-            vertexColors: true,
-            opacity: 0.22
-          });
-          this.reflectMesh = new THREE.Points(this.reflectGeo, this.reflectMat);
-          scene.add(this.reflectMesh);
-
-          // 4. Specular Water Surface Reflection for Streaming Trails
-          this.reflectTrailPositions = new Float32Array(this.particleCount * this.trailLength * 3);
-          this.reflectTrailPositions.set(this.trailPositions);
-
-          const reflectTrailColors = new Float32Array(this.particleCount * this.trailLength * 3);
-          for (let i = 0; i < reflectTrailColors.length; i++) {
-            reflectTrailColors[i] = this.trailColors[i] * 0.25; // Soft shimmer trail color
-          }
-
-          this.reflectTrailGeo = new THREE.BufferGeometry();
-          this.reflectTrailGeo.setAttribute("position", new THREE.BufferAttribute(this.reflectTrailPositions, 3));
-          this.reflectTrailGeo.setAttribute("color", new THREE.BufferAttribute(reflectTrailColors, 3));
-
-          this.reflectTrailMat = new THREE.PointsMaterial({
-            size: (this.style === "kamuro_streamer" ? 1.8 : 1.3) * sizeMult,
-            map: streamerTexture,
-            transparent: true,
-            blending: THREE.AdditiveBlending,
-            depthWrite: false,
-            depthTest: false,
-            vertexColors: true,
-            opacity: 0.18
-          });
-          this.reflectTrailMesh = new THREE.Points(this.reflectTrailGeo, this.reflectTrailMat);
-          scene.add(this.reflectTrailMesh);
-
           triggerFireworkFlash(pos, colorPalette[0], (this.style === "kamuro_streamer" ? 40.0 : 28.0) * sizeMult);
         }
 
@@ -4085,17 +3979,9 @@
           const baseOpacity = Math.pow(1 - progress, 0.85) * flicker;
           this.mat.opacity = baseOpacity;
           this.trailMat.opacity = baseOpacity * 0.95;
-          this.reflectMat.opacity = baseOpacity * 0.22;
-          this.reflectTrailMat.opacity = baseOpacity * 0.18;
 
           const positions = this.geo.attributes.position.array;
           const trailPos = this.trailGeo.attributes.position.array;
-          const reflectPos = this.reflectGeo.attributes.position.array;
-          const refTrailPos = this.reflectTrailGeo.attributes.position.array;
-
-          const camX = camera.position.x;
-          const camY = Math.max(camera.position.y, 25.0);
-          const camZ = camera.position.z;
 
           for (let i = 0; i < this.particleCount; i++) {
             const v = this.velocities[i];
@@ -4110,10 +3996,6 @@
               trailPos[curr] = trailPos[prev];
               trailPos[curr + 1] = trailPos[prev + 1];
               trailPos[curr + 2] = trailPos[prev + 2];
-
-              refTrailPos[curr] = refTrailPos[prev];
-              refTrailPos[curr + 1] = refTrailPos[prev + 1];
-              refTrailPos[curr + 2] = refTrailPos[prev + 2];
             }
 
             // Set trail segment 0 to current star position
@@ -4121,53 +4003,24 @@
             trailPos[baseIdx + 1] = positions[i * 3 + 1];
             trailPos[baseIdx + 2] = positions[i * 3 + 2];
 
-            refTrailPos[baseIdx] = reflectPos[i * 3];
-            refTrailPos[baseIdx + 1] = reflectPos[i * 3 + 1];
-            refTrailPos[baseIdx + 2] = reflectPos[i * 3 + 2];
-
             // Advance star position
             positions[i * 3] += v.x * (dt * 60);
             positions[i * 3 + 1] += v.y * (dt * 60);
             positions[i * 3 + 2] += v.z * (dt * 60);
-
-            const px = positions[i * 3];
-            const py = Math.max(positions[i * 3 + 1], 1.0);
-            const pz = positions[i * 3 + 2];
-
-            // Specular projection onto water surface y = 0.45
-            const specT = py / (py + camY);
-            const sx = THREE.MathUtils.lerp(px, camX, specT * 0.78);
-            const sz = THREE.MathUtils.lerp(pz, camZ, specT * 0.78);
-
-            const wavePhase = this.age * 2.5 + sz * 0.03 + sx * 0.025;
-            const rippleX = Math.sin(wavePhase + i * 0.5) * (8.5 + this.age * 5.0);
-            const rippleZ = Math.cos(wavePhase * 0.8 + i * 0.5) * (8.5 + this.age * 5.0);
-
-            reflectPos[i * 3] = sx + rippleX;
-            reflectPos[i * 3 + 1] = 0.45 + Math.sin(wavePhase) * 0.12;
-            reflectPos[i * 3 + 2] = sz + rippleZ;
           }
 
           this.geo.attributes.position.needsUpdate = true;
           this.trailGeo.attributes.position.needsUpdate = true;
-          this.reflectGeo.attributes.position.needsUpdate = true;
-          this.reflectTrailGeo.attributes.position.needsUpdate = true;
         }
 
         dispose() {
           this.dead = true;
           scene.remove(this.mesh);
           scene.remove(this.trailMesh);
-          scene.remove(this.reflectMesh);
-          scene.remove(this.reflectTrailMesh);
           this.geo.dispose();
           this.mat.dispose();
           this.trailGeo.dispose();
           this.trailMat.dispose();
-          this.reflectGeo.dispose();
-          this.reflectMat.dispose();
-          this.reflectTrailGeo.dispose();
-          this.reflectTrailMat.dispose();
         }
       }
 
