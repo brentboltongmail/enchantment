@@ -2702,13 +2702,14 @@
         depthWrite: false,
         depthTest: true,
         polygonOffset: true,
-        polygonOffsetFactor: -4.0,
-        polygonOffsetUnits: -4.0,
+        polygonOffsetFactor: -12.0,
+        polygonOffsetUnits: -12.0,
         side: THREE.DoubleSide
       });
 
       const ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
-      ribbonMesh.renderOrder = 35;
+      ribbonMesh.renderOrder = 40;
+      ribbonMesh.frustumCulled = false;
       scene.add(ribbonMesh);
 
       const ribbonNodes = [];
@@ -2717,10 +2718,10 @@
 
       for (let i = 0; i <= WAKE_SEGMENTS; i++) {
         ribbonNodes.push({
-          pos: initSternPos.clone(),
+          pos: initSternPos.clone().add(new THREE.Vector3(i * 5.0, 0, 0)),
           normal: initRightVec.clone(),
-          speedRatio: 0,
-          age: 999.0
+          speedRatio: 0.75,
+          age: i * 0.08
         });
       }
 
@@ -2746,7 +2747,8 @@
       bowWakeGeo.setIndex(bowWakeIndices);
 
       const bowWakeMesh = new THREE.Mesh(bowWakeGeo, ribbonMat);
-      bowWakeMesh.renderOrder = 35;
+      bowWakeMesh.renderOrder = 40;
+      bowWakeMesh.frustumCulled = false;
       scene.add(bowWakeMesh);
 
       const bowNodes = [];
@@ -2754,27 +2756,28 @@
 
       for (let i = 0; i <= BOW_SEGMENTS; i++) {
         bowNodes.push({
-          pos: initBowPos.clone(),
+          pos: initBowPos.clone().add(new THREE.Vector3(i * 4.0, 0, 0)),
           normal: initRightVec.clone(),
-          speedRatio: 0,
-          age: 999.0
+          speedRatio: 0.75,
+          age: i * 0.08
         });
       }
 
       function resetWakeSystem(sternPos, bowPos, rightVector) {
         lastNodePos.copy(sternPos);
         lastBowPos.copy(bowPos);
+        const aftDir = rightVector.clone().cross(new THREE.Vector3(0, 1, 0)).normalize();
         for (let i = 0; i <= WAKE_SEGMENTS; i++) {
-          ribbonNodes[i].pos.copy(sternPos);
+          ribbonNodes[i].pos.copy(sternPos).addScaledVector(aftDir, i * 5.0);
           ribbonNodes[i].normal.copy(rightVector);
-          ribbonNodes[i].speedRatio = 0;
-          ribbonNodes[i].age = 999.0;
+          ribbonNodes[i].speedRatio = 0.75;
+          ribbonNodes[i].age = i * 0.08;
         }
         for (let i = 0; i <= BOW_SEGMENTS; i++) {
-          bowNodes[i].pos.copy(bowPos);
+          bowNodes[i].pos.copy(bowPos).addScaledVector(aftDir, i * 4.0);
           bowNodes[i].normal.copy(rightVector);
-          bowNodes[i].speedRatio = 0;
-          bowNodes[i].age = 999.0;
+          bowNodes[i].speedRatio = 0.75;
+          bowNodes[i].age = i * 0.08;
         }
       }
 
@@ -2819,7 +2822,8 @@
         vertexColors: true
       });
       const sprayMesh = new THREE.Points(sprayGeo, sprayMat);
-      sprayMesh.renderOrder = 35;
+      sprayMesh.renderOrder = 45;
+      sprayMesh.frustumCulled = false;
       scene.add(sprayMesh);
 
       let sprayHead = 0;
@@ -7719,10 +7723,12 @@
       // 10. SHIP NAVIGATION & ANIMATION LOOP
       // ==========================================
       const clock = new THREE.Clock();
-      let lastNodePos = new THREE.Vector3();
-      let lastBowPos = new THREE.Vector3();
+      let lastNodePos = new THREE.Vector3(145, 0, -60);
+      let lastBowPos = new THREE.Vector3(-140, 0, -60);
       let accumulatedDistance = 0;
       let lastSprayEmitTime = 0;
+      let lastIdleWakeTime = 0;
+      let lastIdleBowWakeTime = 0;
       const prevShipGroupPos = new THREE.Vector3(0, 0, -60);
 
       function animate() {
@@ -8074,11 +8080,13 @@
         const rightVec = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading);
 
         const distMoved = sternCenter.distanceTo(lastNodePos);
-        const minSampleDist = THREE.MathUtils.lerp(3.2, 1.5, speedRatio);
+        const minSampleDist = THREE.MathUtils.lerp(3.0, 1.2, speedRatio);
 
-        if (distMoved >= minSampleDist && absSpeed > 0.05) {
+        // Always update / shift nodes if moved or periodically when stationary so wake is ALWAYS active
+        if (distMoved >= minSampleDist || (absSpeed < 0.1 && t - lastIdleWakeTime > 0.12)) {
           lastNodePos.copy(sternCenter);
-          accumulatedDistance += distMoved;
+          lastIdleWakeTime = t;
+          accumulatedDistance += Math.max(distMoved, 0.6);
 
           for (let i = WAKE_SEGMENTS; i > 0; i--) {
             ribbonNodes[i].pos.copy(ribbonNodes[i - 1].pos);
@@ -8089,8 +8097,13 @@
 
           ribbonNodes[0].pos.copy(sternCenter);
           ribbonNodes[0].normal.copy(rightVec);
-          ribbonNodes[0].speedRatio = speedRatio;
+          ribbonNodes[0].speedRatio = Math.max(0.40, speedRatio);
           ribbonNodes[0].age = 0;
+        } else {
+          // Always keep head node attached to stern position every single frame
+          ribbonNodes[0].pos.copy(sternCenter);
+          ribbonNodes[0].normal.copy(rightVec);
+          ribbonNodes[0].speedRatio = Math.max(0.40, speedRatio);
         }
 
         const ribPos = ribbonGeo.attributes.position.array;
@@ -8098,8 +8111,8 @@
         const ribAlpha = ribbonGeo.attributes.alpha.array;
 
         // Wake starts at ship beam width (~32m) and flares outward into majestic 480m Kelvin V-cone
-        const startBeamWidth = THREE.MathUtils.lerp(12.0, 32.0, speedRatio);
-        const maxExpandedWidth = THREE.MathUtils.lerp(160.0, 480.0, Math.pow(speedRatio, 0.65));
+        const startBeamWidth = THREE.MathUtils.lerp(18.0, 34.0, speedRatio);
+        const maxExpandedWidth = THREE.MathUtils.lerp(220.0, 520.0, Math.pow(Math.max(0.35, speedRatio), 0.65));
 
         for (let i = 0; i <= WAKE_SEGMENTS; i++) {
           const node = ribbonNodes[i];
@@ -8108,24 +8121,24 @@
           const progress = i / WAKE_SEGMENTS;
           const nodeSpeed = node.speedRatio;
 
-          // Natural age fade (dissipates seamlessly over ~30 seconds)
-          const ageFade = Math.pow(Math.max(0.0, 1.0 - (node.age / 30.0)), 1.2);
-          const progressFade = Math.pow(1.0 - progress, 0.82);
+          // Natural age fade (dissipates smoothly over ~45 seconds)
+          const ageFade = Math.pow(Math.max(0.35, 1.0 - (node.age / 45.0)), 0.85);
+          const progressFade = Math.pow(1.0 - progress, 0.75);
 
           // Dramatic Kelvin V-cone expansion
           const currentWidth = THREE.MathUtils.lerp(
             startBeamWidth,
-            maxExpandedWidth * Math.max(0.25, nodeSpeed),
-            Math.pow(progress, 0.52)
+            maxExpandedWidth * Math.max(0.35, nodeSpeed),
+            Math.pow(progress, 0.50)
           );
           const halfW = currentWidth * 0.5;
 
           const leftPos = node.pos.clone().addScaledVector(node.normal, -halfW);
           const rightPos = node.pos.clone().addScaledVector(node.normal, halfW);
 
-          // Elevated slightly (+0.35m) with polygonOffset to conform to dynamic rolling ocean waves
-          const leftY = getWaterHeight(leftPos.x, leftPos.z, t) + 0.35;
-          const rightY = getWaterHeight(rightPos.x, rightPos.z, t) + 0.35;
+          // Elevated (+0.85m) with polygonOffset to conform to dynamic rolling ocean waves without wave clipping
+          const leftY = getWaterHeight(leftPos.x, leftPos.z, t) + 0.85;
+          const rightY = getWaterHeight(rightPos.x, rightPos.z, t) + 0.85;
 
           const v0 = i * 2;
           const v1 = v0 + 1;
@@ -8143,7 +8156,7 @@
           ribUV[v1 * 2] = 1.0;
           ribUV[v1 * 2 + 1] = progress * 14.0;
 
-          const finalAlpha = progressFade * ageFade * Math.min(1.0, Math.max(0.20, nodeSpeed * 1.6));
+          const finalAlpha = progressFade * ageFade * Math.min(1.0, Math.max(0.45, nodeSpeed * 1.6));
           ribAlpha[v0] = finalAlpha;
           ribAlpha[v1] = finalAlpha;
         }
@@ -8159,10 +8172,11 @@
           new THREE.Vector3(-140, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
         );
         const bowDistMoved = bowCenter.distanceTo(lastBowPos);
-        const bowSampleDist = THREE.MathUtils.lerp(2.8, 1.4, speedRatio);
+        const bowSampleDist = THREE.MathUtils.lerp(2.6, 1.2, speedRatio);
 
-        if (bowDistMoved >= bowSampleDist && absSpeed > 0.05) {
+        if (bowDistMoved >= bowSampleDist || (absSpeed < 0.1 && t - lastIdleBowWakeTime > 0.14)) {
           lastBowPos.copy(bowCenter);
+          lastIdleBowWakeTime = t;
 
           for (let i = BOW_SEGMENTS; i > 0; i--) {
             bowNodes[i].pos.copy(bowNodes[i - 1].pos);
@@ -8173,8 +8187,12 @@
 
           bowNodes[0].pos.copy(bowCenter);
           bowNodes[0].normal.copy(rightVec);
-          bowNodes[0].speedRatio = speedRatio;
+          bowNodes[0].speedRatio = Math.max(0.35, speedRatio);
           bowNodes[0].age = 0;
+        } else {
+          bowNodes[0].pos.copy(bowCenter);
+          bowNodes[0].normal.copy(rightVec);
+          bowNodes[0].speedRatio = Math.max(0.35, speedRatio);
         }
 
         const bWakePos = bowWakeGeo.attributes.position.array;
@@ -8186,17 +8204,17 @@
           bNode.age += dt;
 
           const prog = i / BOW_SEGMENTS;
-          const bWidth = THREE.MathUtils.lerp(8.0, 180.0 * Math.max(0.20, bNode.speedRatio), Math.pow(prog, 0.62));
+          const bWidth = THREE.MathUtils.lerp(10.0, 200.0 * Math.max(0.30, bNode.speedRatio), Math.pow(prog, 0.60));
           const bHalfW = bWidth * 0.5;
 
-          const bAgeFade = Math.pow(Math.max(0.0, 1.0 - (bNode.age / 12.0)), 1.2);
-          const bProgFade = Math.pow(1.0 - prog, 0.88);
+          const bAgeFade = Math.pow(Math.max(0.30, 1.0 - (bNode.age / 25.0)), 0.85);
+          const bProgFade = Math.pow(1.0 - prog, 0.80);
 
           const bLPos = bNode.pos.clone().addScaledVector(bNode.normal, -bHalfW);
           const bRPos = bNode.pos.clone().addScaledVector(bNode.normal, bHalfW);
 
-          const bLY = getWaterHeight(bLPos.x, bLPos.z, t) + 0.35;
-          const bRY = getWaterHeight(bRPos.x, bRPos.z, t) + 0.35;
+          const bLY = getWaterHeight(bLPos.x, bLPos.z, t) + 0.85;
+          const bRY = getWaterHeight(bRPos.x, bRPos.z, t) + 0.85;
 
           const v0 = i * 2;
           const v1 = v0 + 1;
@@ -8214,7 +8232,7 @@
           bWakeUV[v1 * 2] = 1.0;
           bWakeUV[v1 * 2 + 1] = prog * 6.0;
 
-          const bFinalAlpha = bProgFade * bAgeFade * Math.min(1.0, Math.max(0.15, bNode.speedRatio * 1.5));
+          const bFinalAlpha = bProgFade * bAgeFade * Math.min(1.0, Math.max(0.35, bNode.speedRatio * 1.5));
           bWakeAlpha[v0] = bFinalAlpha;
           bWakeAlpha[v1] = bFinalAlpha;
         }
@@ -8226,9 +8244,9 @@
         // ----------------------------------------
         // E. Propeller Wash Churn Particles (Luminous High-Opacity Foam)
         // ----------------------------------------
-        const sprayInterval = THREE.MathUtils.lerp(0.08, 0.020, speedRatio);
+        const sprayInterval = THREE.MathUtils.lerp(0.06, 0.018, speedRatio);
 
-        if (absSpeed > 0.4 && t - lastSprayEmitTime > sprayInterval) {
+        if (t - lastSprayEmitTime > sprayInterval) {
           lastSprayEmitTime = t;
 
           const heading = shipState.heading;
@@ -8238,10 +8256,10 @@
           // Dual Propeller Churn trailing behind the stern
           [-7.0, 7.0].forEach((zOff) => {
             const propOrigin = sternCenter.clone().addScaledVector(rgt, zOff + (Math.random() - 0.5) * 3.0);
-            const propVel = rgt.clone().multiplyScalar((Math.random() - 0.5) * 3.0).addScaledVector(fwd, -4.0 * speedRatio);
-            const pSize = THREE.MathUtils.lerp(18, 55, speedRatio);
-            const pLife = THREE.MathUtils.lerp(2.0, 5.2, speedRatio);
-            const pOpacity = THREE.MathUtils.lerp(0.65, 0.95, speedRatio);
+            const propVel = rgt.clone().multiplyScalar((Math.random() - 0.5) * 3.0).addScaledVector(fwd, -THREE.MathUtils.lerp(2.0, 6.0, speedRatio));
+            const pSize = THREE.MathUtils.lerp(24, 60, Math.max(0.3, speedRatio));
+            const pLife = THREE.MathUtils.lerp(2.5, 5.5, Math.max(0.3, speedRatio));
+            const pOpacity = THREE.MathUtils.lerp(0.75, 0.98, Math.max(0.3, speedRatio));
             spawnSpray(propOrigin, propVel, pSize, pLife, pOpacity);
           });
         }
