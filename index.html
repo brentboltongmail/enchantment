@@ -1930,23 +1930,23 @@
 
       const seafoamTexture = createSeafoamTexture();
 
-      // Infinite Ocean System: Near-field high-res wave mesh + Vast 1,500km Far-field ocean horizon plane
-      const waterSize = 100000;
-      const waterSegments = 130;
+      // High-Density Active Ocean Mesh (8km wide, 180x180 vertices = ~44m spacing)
+      const waterSize = 8000;
+      const waterSegments = 180;
       const waterGeo = new THREE.PlaneGeometry(waterSize, waterSize, waterSegments, waterSegments);
       const posAttr = waterGeo.attributes.position;
       const initialPositions = new Float32Array(posAttr.array);
 
       const waterMat = new THREE.MeshStandardMaterial({
-        color: 0x063f68,
-        roughness: 0.32,
-        metalness: 0.22,
+        color: 0x032b4d,
+        roughness: 0.18,
+        metalness: 0.12,
         normalMap: oceanNormalMap,
-        normalScale: new THREE.Vector2(1.4, 1.4),
+        normalScale: new THREE.Vector2(1.8, 1.8),
         flatShading: false
       });
 
-      // Dynamic Multi-Directional In-Place Morphing Ocean Shader Engine
+      // Photorealistic Caribbean Organic Gerstner Wave Shader Engine
       waterMat.onBeforeCompile = (shader) => {
         shader.uniforms.uTime = { value: 0 };
         shader.uniforms.uFoamTex = { value: seafoamTexture };
@@ -1972,65 +1972,32 @@
           '#include <normal_fragment_maps>',
           `
           // =========================================================
-          // Dual-Phase In-Place Wave Morphing Cycle (Waves recreate in place every ~3.6s)
+          // 6-Octave Chaotic Turbulent Normal Perturbation (Wild Non-Harmonic Swirls)
           // =========================================================
-          float waveCycle = uTime * 0.28;
-          float phaseA = fract(waveCycle);
-          float phaseB = fract(waveCycle + 0.5);
-
-          // Smooth sinusoidal cross-fade weights
-          float weightA = sin(phaseA * 3.14159265);
-          float weightB = sin(phaseB * 3.14159265);
-          float invSum = 1.0 / (weightA + weightB + 0.0001);
-          weightA *= invSum;
-          weightB *= invSum;
-
-          // 4 Cross-directional wave vectors (Interference pattern)
-          vec2 dir1 = vec2( 0.866,  0.500); // +30 deg dominant swell
-          vec2 dir2 = vec2(-0.500,  0.866); // +120 deg cross swell
-          vec2 dir3 = vec2(-0.707, -0.707); // -135 deg counter chop
-          vec2 dir4 = vec2( 0.383, -0.924); // -67 deg capillary ripple
-
-          vec2 uvBase = vOceanWorldPos.xz * 0.009;
-
-          // Multi-layer UV offsets for Phase A
-          vec2 uvA1 = uvBase * 1.00 + dir1 * (phaseA * 0.35);
-          vec2 uvA2 = uvBase * 2.20 + dir2 * (phaseA * 0.28);
-          vec2 uvA3 = uvBase * 4.60 + dir3 * (phaseA * 0.45);
-
-          // Multi-layer UV offsets for Phase B
-          vec2 uvB1 = uvBase * 1.15 + dir2 * (phaseB * 0.32);
-          vec2 uvB2 = uvBase * 2.45 + dir1 * (phaseB * 0.26);
-          vec2 uvB3 = uvBase * 4.85 + dir4 * (phaseB * 0.48);
-
-          // Sample normal maps for both phases
-          vec3 nA1 = texture2D(normalMap, uvA1).xyz * 2.0 - 1.0;
-          vec3 nA2 = texture2D(normalMap, uvA2).xyz * 2.0 - 1.0;
-          vec3 nA3 = texture2D(normalMap, uvA3).xyz * 2.0 - 1.0;
-          vec3 normA = normalize(nA1 + nA2 * 0.70 + nA3 * 0.45);
-
-          vec3 nB1 = texture2D(normalMap, uvB1).xyz * 2.0 - 1.0;
-          vec3 nB2 = texture2D(normalMap, uvB2).xyz * 2.0 - 1.0;
-          vec3 nB3 = texture2D(normalMap, uvB3).xyz * 2.0 - 1.0;
-          vec3 normB = normalize(nB1 + nB2 * 0.70 + nB3 * 0.45);
-
-          // Blended in-place regenerating normal
-          vec3 morphNormal = normalize(normA * weightA + normB * weightB);
-
-          // In-Place Standing Wave Interference Perturbation
-          float stX = sin(vOceanWorldPos.x * 0.08 + sin(uTime * 0.7) * 1.2) * cos(vOceanWorldPos.z * 0.08 + cos(uTime * 0.6) * 1.2);
-          float stZ = cos(vOceanWorldPos.x * 0.06 - uTime * 0.4) * sin(vOceanWorldPos.z * 0.06 + uTime * 0.5);
-          float stPulse = sin(uTime * 1.4 + vOceanWorldPos.x * 0.03 + vOceanWorldPos.z * 0.03) * 0.5 + 0.5;
-
-          vec3 standingNormal = vec3(
-            cos(vOceanWorldPos.x * 0.16 + uTime * 1.1) * 0.35 * stPulse * (stX + 0.5),
-            1.0,
-            sin(vOceanWorldPos.z * 0.16 + uTime * 1.0) * 0.35 * stPulse * (stZ + 0.5)
+          // Non-linear coordinate warping to create chaotic water displacement
+          vec2 uvWarp = vOceanWorldPos.xz * 0.0065;
+          vec2 warp = vec2(
+            sin(uvWarp.y * 2.8 + uTime * 0.35) * 0.22 + cos(uvWarp.x * 4.2 - uTime * 0.48) * 0.14,
+            cos(uvWarp.x * 2.8 - uTime * 0.32) * 0.22 + sin(uvWarp.y * 4.2 + uTime * 0.42) * 0.14
           );
-          standingNormal = normalize(standingNormal);
+          vec2 uvBase = uvWarp + warp;
 
-          vec3 finalWaveNormal = normalize(mix(morphNormal, standingNormal, 0.35));
-          finalWaveNormal.xy *= normalScale;
+          vec2 d1 = vec2( 0.829,  0.559); // Primary deep swell (+34 deg)
+          vec2 d2 = vec2(-0.615,  0.788); // Cross swell (+128 deg)
+          vec2 d3 = vec2(-0.819, -0.573); // Storm wind chop (+215 deg)
+          vec2 d4 = vec2( 0.309,  0.951); // Trade wind swell (+72 deg)
+          vec2 d5 = vec2( 0.615, -0.788); // Diagonal counter-chop (+308 deg)
+          vec2 d6 = vec2(-0.966,  0.258); // Capillary ripple (+285 deg)
+
+          vec3 n1 = texture2D(normalMap, uvBase * 1.00 + d1 * (uTime * 0.032)).xyz * 2.0 - 1.0;
+          vec3 n2 = texture2D(normalMap, uvBase * 2.37 + d2 * (uTime * 0.048)).xyz * 2.0 - 1.0;
+          vec3 n3 = texture2D(normalMap, uvBase * 4.81 + d3 * (uTime * 0.075)).xyz * 2.0 - 1.0;
+          vec3 n4 = texture2D(normalMap, uvBase * 9.63 + d4 * (uTime * 0.115)).xyz * 2.0 - 1.0;
+          vec3 n5 = texture2D(normalMap, uvBase * 18.4 + d5 * (uTime * 0.165)).xyz * 2.0 - 1.0;
+          vec3 n6 = texture2D(normalMap, uvBase * 34.2 + d6 * (uTime * 0.245)).xyz * 2.0 - 1.0;
+
+          vec3 finalWaveNormal = normalize(n1 * 1.0 + n2 * 0.75 + n3 * 0.52 + n4 * 0.34 + n5 * 0.22 + n6 * 0.14);
+          finalWaveNormal.xy *= (normalScale * 1.35);
 
           #ifdef USE_TANGENT
             mat3 vTBN = mat3(tangent, bitangent, normal);
@@ -2049,12 +2016,25 @@
           `
           #include <color_fragment>
 
-          // Clean, realistic ocean depth gradient without white splotches
+          // Dynamic Caribbean Oceanic Depth & Translucent Turquoise Crest Shader
           float crestElevation = vOceanWorldPos.y;
-          vec3 deepWater = vec3(0.02, 0.16, 0.32);
-          vec3 crestWater = vec3(0.04, 0.28, 0.46);
-          float depthFactor = smoothstep(-2.5, 4.0, crestElevation) * 0.35;
-          diffuseColor.rgb = mix(deepWater, crestWater, depthFactor);
+          vec3 deepIndigo = vec3(0.010, 0.065, 0.155); // Deep rich abyss in wave troughs
+          vec3 ceruleanBlue = vec3(0.020, 0.220, 0.400); // Mid-depth ocean azure
+          vec3 translucentTurquoise = vec3(0.055, 0.480, 0.620); // Sunlit translucent wave crests
+
+          float depthMix = smoothstep(-3.0, 0.4, crestElevation);
+          vec3 waterGrad = mix(deepIndigo, ceruleanBlue, depthMix);
+          float crestGlow = smoothstep(0.4, 3.5, crestElevation);
+          waterGrad = mix(waterGrad, translucentTurquoise, crestGlow * 0.85);
+
+          // Dynamic Chaotic Whitecap Seafoam on Peaking Wave Crests
+          vec2 foamUV = vOceanWorldPos.xz * 0.018 + vec2(uTime * 0.015, -uTime * 0.020);
+          float foamNoise = texture2D(uFoamTex, foamUV).r * texture2D(uFoamTex, foamUV * 2.8 + 0.35).r;
+          float whitecapFactor = smoothstep(1.85, 3.8, crestElevation) * smoothstep(0.35, 0.85, foamNoise);
+          vec3 whitecapColor = vec3(0.92, 0.98, 1.0);
+          waterGrad = mix(waterGrad, whitecapColor, whitecapFactor * 0.88);
+
+          diffuseColor.rgb = waterGrad;
           `
         );
       };
@@ -2065,16 +2045,16 @@
       water.receiveShadow = true;
       scene.add(water);
 
-      // Boundless 1,500km Far-field Ocean Plane extending all the way to the horizon
+      // Boundless 1,500km Far-field Ocean Plane extending seamlessly to the horizon
       const farOceanGeo = new THREE.PlaneGeometry(1500000, 1500000, 4, 4);
       const farOceanMat = new THREE.MeshStandardMaterial({
-        color: 0x063f68,
-        roughness: 0.45,
-        metalness: 0.15
+        color: 0x011c36,
+        roughness: 0.32,
+        metalness: 0.12
       });
       const farOcean = new THREE.Mesh(farOceanGeo, farOceanMat);
       farOcean.rotation.x = -Math.PI / 2;
-      farOcean.position.y = -25.0; // Safely below wave troughs so it never creates flat patches
+      farOcean.position.y = -0.6; // Seamless horizon transition
       scene.add(farOcean);
 
       // ==========================================
@@ -6675,28 +6655,54 @@
         oceanNormalMap.offset.y = (shipGroup.position.z * 0.0008 + t * 0.011) % 1;
 
         // ----------------------------------------
-        // C. Multi-Directional In-Place Morphing Ocean Waves (Standing Wave & Cross-Swell System)
+        // C. Chaotic Multi-Scale Turbulent Ocean Swell & Chop Engine
         // ----------------------------------------
         function getWaterHeight(x, z, time) {
-          // Standing wave pulse envelopes: waves breathe, swell, crest and recreate in place every ~3.6s
-          const env1 = 0.65 + 0.35 * Math.sin(x * 0.005 + z * 0.004 + time * 0.28);
-          const env2 = 0.65 + 0.35 * Math.cos(x * 0.004 - z * 0.006 + time * 0.22);
-          const pulse1 = Math.sin(time * 1.57 + x * 0.008 + z * 0.006) * 0.5 + 0.5; // ~4.0s cycle
-          const pulse2 = Math.cos(time * 1.39 - x * 0.007 + z * 0.009) * 0.5 + 0.5; // ~4.5s cycle
+          // Turbulent non-linear domain warping (destroys all regular grids/patterns)
+          const warpX = x + 38.0 * Math.sin(z * 0.0065 + time * 0.38) + 18.0 * Math.cos(x * 0.014 - time * 0.52);
+          const warpZ = z + 38.0 * Math.cos(x * 0.0065 - time * 0.32) + 18.0 * Math.sin(z * 0.014 + time * 0.44);
 
-          // In-place standing wave peaks (formed by counter-propagating cross waves)
-          const standing1 = Math.sin(x * 0.018 + Math.sin(time * 0.7) * 1.2) * Math.cos(z * 0.018 + Math.cos(time * 0.6) * 1.2) * 1.85 * pulse1;
-          const standing2 = Math.cos(x * 0.034 - z * 0.026) * Math.sin(x * 0.026 + z * 0.034) * Math.sin(time * 1.75) * 1.25 * pulse2;
+          // 1. Primary Deep Ocean Ground Swell (+34 deg, Wavelength ~280m)
+          const p1 = (warpX * 0.829 + warpZ * 0.559) * 0.0224 + time * 0.48;
+          const w1 = (Math.sin(p1) + 0.38 * Math.sin(2.0 * p1) + 0.12 * Math.sin(3.0 * p1)) * 2.35;
 
-          // Cross-directional intersecting swells
-          const w1 = Math.sin((x * 0.866 + z * 0.500) * 0.022 + time * 0.58) * 2.15 * env1;
-          const w2 = Math.cos((-x * 0.500 + z * 0.866) * 0.026 + time * 0.52) * 1.75 * env2;
-          const w3 = Math.sin((-x * 0.707 - z * 0.707) * 0.048 + time * 0.78) * 0.95;
-          const w4 = Math.cos((x * 0.383 - z * 0.924) * 0.076 + time * 1.02) * 0.65;
-          const w5 = Math.sin((x * 0.650 + z * 0.750) * 0.125 + time * 1.30) * 0.38;
-          const w6 = Math.cos((-x * 0.720 + z * 0.690) * 0.195 + time * 1.65) * 0.22;
+          // 2. Heavy Cross Swell (+128 deg, Wavelength ~195m)
+          const p2 = (-warpX * 0.615 + warpZ * 0.788) * 0.0322 + time * 0.58;
+          const w2 = (Math.sin(p2) + 0.32 * Math.sin(2.0 * p2) + 0.10 * Math.sin(3.0 * p2)) * 1.85;
 
-          return standing1 + standing2 + w1 + w2 + w3 + w4 + w5 + w6;
+          // 3. Turbulent Storm Wind Chop (+215 deg, Wavelength ~125m)
+          const p3 = (-warpX * 0.819 - warpZ * 0.573) * 0.0502 + time * 0.76;
+          const w3 = (Math.sin(p3) + 0.25 * Math.sin(2.0 * p3)) * 1.35;
+
+          // 4. Caribbean Trade Wind Swell (+72 deg, Wavelength ~82m)
+          const p4 = (warpX * 0.309 + warpZ * 0.951) * 0.0766 + time * 0.96;
+          const w4 = (Math.sin(p4) + 0.20 * Math.sin(2.0 * p4)) * 0.95;
+
+          // 5. Diagonal Counter Chop (+308 deg, Wavelength ~52m)
+          const p5 = (warpX * 0.615 - warpZ * 0.788) * 0.1208 + time * 1.25;
+          const w5 = Math.sin(p5) * 0.68;
+
+          // 6. High-Frequency Surface Waves (+165 deg, Wavelength ~30m)
+          const p6 = (-warpX * 0.258 + warpZ * 0.966) * 0.2094 + time * 1.68;
+          const w6 = Math.sin(p6) * 0.42;
+
+          // 7. Capillary Ripple Chop (+285 deg, Wavelength ~17m)
+          const p7 = (-warpX * 0.966 + warpZ * 0.258) * 0.3695 + time * 2.25;
+          const w7 = Math.sin(p7) * 0.24;
+
+          // 8. Micro-Turbulence Surface Noise (+15 deg, Wavelength ~10m)
+          const p8 = (warpX * 0.966 + warpZ * 0.258) * 0.6283 + time * 3.10;
+          const w8 = Math.sin(p8) * 0.14;
+
+          // 9. Chaotic Colliding Rogue Wave Peaks (Erupting pyramidal interference peaks)
+          const roguePhase = Math.sin(warpX * 0.012 + time * 0.65) * Math.cos(warpZ * 0.012 - time * 0.55);
+          const rogueBurst = Math.sin(time * 1.15 + (x + z) * 0.005) * 0.5 + 0.5;
+          const wRogue = roguePhase * 1.45 * rogueBurst;
+
+          // Broad oceanic swell group modulation envelope (~1.5km wave group packet)
+          const groupEnvelope = 0.80 + 0.20 * Math.sin(x * 0.004 + z * 0.003 + time * 0.18);
+
+          return (w1 + w2 + w3 + w4 + w5 + w6 + w7 + w8 + wRogue) * groupEnvelope;
         }
 
         // Dynamic Infinite Ocean Tracking (Water plane follows vessel everywhere)
