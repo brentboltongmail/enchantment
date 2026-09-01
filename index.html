@@ -387,35 +387,6 @@
         box-shadow: 0 0 14px rgba(0, 119, 255, 0.5);
       }
 
-      /* Instructions HUD */
-      #instructions {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        text-align: center;
-        pointer-events: none;
-        z-index: 10;
-        font-size: 12px;
-        color: #d1e4ff;
-        background: rgba(10, 20, 35, 0.75);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
-        padding: 9px 24px;
-        border-radius: 24px;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-        display: flex;
-        gap: 15px;
-      }
-      .key-tag {
-        background: rgba(255, 255, 255, 0.18);
-        padding: 2px 7px;
-        border-radius: 6px;
-        font-weight: bold;
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.25);
-      }
 
       /* Caribbean Nautical Map Modal */
       .map-modal {
@@ -1385,10 +1356,7 @@
       </div>
     </div>
 
-    <!-- Instructions -->
-    <div id="instructions">
-      <div><span class="key-tag">▲</span> Faster &bull; <span class="key-tag">▼</span> Slower &bull; <span class="key-tag">◄</span> <span class="key-tag">►</span> Steer</div>
-    </div>
+    <!-- Import Maps -->
 
     <script type="importmap">
       {
@@ -5813,7 +5781,7 @@
       const mouse = new THREE.Vector2();
 
       window.addEventListener("pointerdown", (e) => {
-        if (e.target.closest("#header, #left-panel, #toolbar, #instructions, .map-modal, .roster-modal, #venue-card")) return;
+        if (e.target.closest("#header, #left-panel, #toolbar, .map-modal, .roster-modal, #venue-card")) return;
         mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
