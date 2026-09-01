@@ -2078,11 +2078,11 @@
       scene.add(farOcean);
 
       // ==========================================
-      // 4. PHOTOREALISTIC KELVIN WAKE & FOAM SYSTEM
+      // 4. PHOTOREALISTIC KELVIN WAKE & DUAL-FROTH PROP WASH SYSTEM
       // ==========================================
 
-      // Dynamic Connected Ribbon Mesh Wake (Extended Kelvin V-Cone)
-      const WAKE_SEGMENTS = 180;
+      // Dynamic 250-Segment Connected Ribbon Mesh Wake (1.8km Continuous Kelvin V-Cone)
+      const WAKE_SEGMENTS = 250;
       const WAKE_VERTICES = (WAKE_SEGMENTS + 1) * 2;
       const ribbonPositions = new Float32Array(WAKE_VERTICES * 3);
       const ribbonUVs = new Float32Array(WAKE_VERTICES * 2);
@@ -2125,32 +2125,34 @@
           varying float vAlpha;
 
           void main() {
-            vec2 foamUV1 = vec2(vUv.x * 2.5, vUv.y * 8.0 - uTime * 0.22);
-            vec2 foamUV2 = vec2(vUv.x * 4.8 + 0.4, vUv.y * 14.0 - uTime * 0.35);
+            vec2 foamUV1 = vec2(vUv.x * 2.8, vUv.y * 6.0 - uTime * 0.25);
+            vec2 foamUV2 = vec2(vUv.x * 5.2 + 0.4, vUv.y * 12.0 - uTime * 0.38);
             vec4 f1 = texture2D(uFoamTex, foamUV1);
             vec4 f2 = texture2D(uFoamTex, foamUV2);
             float noiseFoam = (f1.r * 0.65 + f2.r * 0.35);
 
-            // Center Propeller Wash boiling race
-            float centerWash = exp(-abs(vUv.x - 0.5) * 6.5) * 1.35;
+            // Center Propeller Wash boiling race (Double screw azipod twin core)
+            float propLeft = exp(-abs(vUv.x - 0.42) * 14.0);
+            float propRight = exp(-abs(vUv.x - 0.58) * 14.0);
+            float centerWash = (propLeft + propRight) * 1.55 + exp(-abs(vUv.x - 0.5) * 5.5) * 0.85;
 
-            // Outer Kelvin V-Crest foaming ribbons
-            float kelvinL = exp(-abs(vUv.x - 0.12) * 10.0);
-            float kelvinR = exp(-abs(vUv.x - 0.88) * 10.0);
-            float kelvinCrests = (kelvinL + kelvinR) * 0.95;
+            // Outer Kelvin V-Crest foaming ribbons (19.47 degree angle)
+            float kelvinL = exp(-abs(vUv.x - 0.08) * 12.0);
+            float kelvinR = exp(-abs(vUv.x - 0.92) * 12.0);
+            float kelvinCrests = (kelvinL + kelvinR) * 1.25;
 
-            // Transverse wave ripples
-            float transverse = sin(vUv.y * 24.0 - uTime * 2.5) * 0.18 + cos(vUv.y * 12.0 + vUv.x * 7.0) * 0.12;
+            // Transverse wave ripples drifting aft
+            float transverse = sin(vUv.y * 22.0 - uTime * 2.2) * 0.22 + cos(vUv.y * 11.0 + vUv.x * 8.0) * 0.14;
 
-            float edgeFade = smoothstep(0.0, 0.14, vUv.x) * smoothstep(1.0, 0.86, vUv.x);
-            float combinedFoam = clamp((noiseFoam * 1.15 + centerWash + kelvinCrests + transverse), 0.0, 1.0);
+            float edgeFade = smoothstep(0.0, 0.12, vUv.x) * smoothstep(1.0, 0.88, vUv.x);
+            float combinedFoam = clamp((noiseFoam * 1.1 + centerWash + kelvinCrests + transverse), 0.0, 1.0);
 
             // Brilliant luminous oceanic froth (high-contrast, vivid from all 360 degree camera angles)
-            vec3 deepFroth = vec3(0.35, 0.88, 0.98); // Vivid turquoise aerated micro-bubbles
+            vec3 deepFroth = vec3(0.28, 0.85, 0.96); // Vivid turquoise aerated micro-bubbles
             vec3 brightFroth = vec3(0.98, 1.0, 1.0); // Brilliant pure white crest foam
-            vec3 foamCol = mix(deepFroth, brightFroth, smoothstep(0.25, 0.82, combinedFoam));
+            vec3 foamCol = mix(deepFroth, brightFroth, smoothstep(0.22, 0.78, combinedFoam));
 
-            float finalAlpha = vAlpha * edgeFade * (combinedFoam * 0.75 + 0.25);
+            float finalAlpha = vAlpha * edgeFade * (combinedFoam * 0.82 + 0.18);
 
             gl_FragColor = vec4(foamCol, finalAlpha);
           }
@@ -2159,26 +2161,31 @@
         blending: THREE.NormalBlending,
         depthWrite: false,
         depthTest: true,
+        polygonOffset: true,
+        polygonOffsetFactor: -4.0,
+        polygonOffsetUnits: -4.0,
         side: THREE.DoubleSide
       });
 
       const ribbonMesh = new THREE.Mesh(ribbonGeo, ribbonMat);
-      ribbonMesh.renderOrder = 30;
+      ribbonMesh.renderOrder = 35;
       scene.add(ribbonMesh);
 
       const ribbonNodes = [];
+      const initSternPos = new THREE.Vector3(145, 0, -60);
+      const initRightVec = new THREE.Vector3(0, 0, 1);
+
       for (let i = 0; i <= WAKE_SEGMENTS; i++) {
         ribbonNodes.push({
-          pos: new THREE.Vector3(0, -500, 0),
-          normal: new THREE.Vector3(0, 0, 1),
+          pos: initSternPos.clone(),
+          normal: initRightVec.clone(),
           speedRatio: 0,
-          age: 100,
-          maxAge: 18.0
+          age: 999.0
         });
       }
 
       // Dynamic Bow Wave V-Crest Mesh (Shoulder Kelvin Waves from Bow)
-      const BOW_SEGMENTS = 50;
+      const BOW_SEGMENTS = 70;
       const bowWakePositions = new Float32Array((BOW_SEGMENTS + 1) * 2 * 3);
       const bowWakeUVs = new Float32Array((BOW_SEGMENTS + 1) * 2 * 2);
       const bowWakeAlphas = new Float32Array((BOW_SEGMENTS + 1) * 2);
@@ -2199,17 +2206,36 @@
       bowWakeGeo.setIndex(bowWakeIndices);
 
       const bowWakeMesh = new THREE.Mesh(bowWakeGeo, ribbonMat);
-      bowWakeMesh.renderOrder = 30;
+      bowWakeMesh.renderOrder = 35;
       scene.add(bowWakeMesh);
 
       const bowNodes = [];
+      const initBowPos = new THREE.Vector3(-140, 0, -60);
+
       for (let i = 0; i <= BOW_SEGMENTS; i++) {
         bowNodes.push({
-          pos: new THREE.Vector3(0, -500, 0),
-          normal: new THREE.Vector3(0, 0, 1),
+          pos: initBowPos.clone(),
+          normal: initRightVec.clone(),
           speedRatio: 0,
-          age: 100
+          age: 999.0
         });
+      }
+
+      function resetWakeSystem(sternPos, bowPos, rightVector) {
+        lastNodePos.copy(sternPos);
+        lastBowPos.copy(bowPos);
+        for (let i = 0; i <= WAKE_SEGMENTS; i++) {
+          ribbonNodes[i].pos.copy(sternPos);
+          ribbonNodes[i].normal.copy(rightVector);
+          ribbonNodes[i].speedRatio = 0;
+          ribbonNodes[i].age = 999.0;
+        }
+        for (let i = 0; i <= BOW_SEGMENTS; i++) {
+          bowNodes[i].pos.copy(bowPos);
+          bowNodes[i].normal.copy(rightVector);
+          bowNodes[i].speedRatio = 0;
+          bowNodes[i].age = 999.0;
+        }
       }
 
       // Propeller Wash & Churn Spray Particles (Large Luminous Aerated Foam)
@@ -5368,6 +5394,16 @@
         camera.position.copy(controls.target).add(sternOffset);
         controls.update();
 
+        // Reset wake ribbon trails to new vessel coordinates
+        const newSternP = shipGroup.position.clone().add(
+          new THREE.Vector3(142, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
+        );
+        const newBowP = shipGroup.position.clone().add(
+          new THREE.Vector3(-140, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
+        );
+        const newRightV = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading);
+        resetWakeSystem(newSternP, newBowP, newRightV);
+
         closeMap();
         triggerPortArrival(port);
       }
@@ -6684,16 +6720,16 @@
         posAttr.needsUpdate = true;
 
         // ----------------------------------------
-        // D. High-Fidelity Stern Kelvin V-Wake Ribbon Mesh Generation
+        // D. High-Fidelity Stern Kelvin V-Wake Ribbon Mesh Generation (250 Segments, ~1.8km)
         // ----------------------------------------
         const sternCenter = shipGroup.position.clone().add(
-          new THREE.Vector3(145, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
+          new THREE.Vector3(142, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
         );
         sternCenter.y = getWaterHeight(sternCenter.x, sternCenter.z, t);
         const rightVec = new THREE.Vector3(0, 0, 1).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading);
 
         const distMoved = sternCenter.distanceTo(lastNodePos);
-        const minSampleDist = THREE.MathUtils.lerp(3.5, 1.8, speedRatio);
+        const minSampleDist = THREE.MathUtils.lerp(3.2, 1.5, speedRatio);
 
         if (distMoved >= minSampleDist && absSpeed > 0.05) {
           lastNodePos.copy(sternCenter);
@@ -6716,9 +6752,9 @@
         const ribUV = ribbonGeo.attributes.uv.array;
         const ribAlpha = ribbonGeo.attributes.alpha.array;
 
-        // Wake starts narrow at stern (~20m) and expands outward into an expansive Kelvin V-wake cone (~580m)
-        const startBeamWidth = THREE.MathUtils.lerp(4.0, 22.0, speedRatio);
-        const maxExpandedWidth = THREE.MathUtils.lerp(140.0, 580.0, Math.pow(speedRatio, 0.72));
+        // Wake starts at ship beam width (~32m) and flares outward into majestic 480m Kelvin V-cone
+        const startBeamWidth = THREE.MathUtils.lerp(12.0, 32.0, speedRatio);
+        const maxExpandedWidth = THREE.MathUtils.lerp(160.0, 480.0, Math.pow(speedRatio, 0.65));
 
         for (let i = 0; i <= WAKE_SEGMENTS; i++) {
           const node = ribbonNodes[i];
@@ -6727,10 +6763,14 @@
           const progress = i / WAKE_SEGMENTS;
           const nodeSpeed = node.speedRatio;
 
+          // Natural age fade (dissipates seamlessly over ~30 seconds)
+          const ageFade = Math.pow(Math.max(0.0, 1.0 - (node.age / 30.0)), 1.2);
+          const progressFade = Math.pow(1.0 - progress, 0.82);
+
           // Dramatic Kelvin V-cone expansion
           const currentWidth = THREE.MathUtils.lerp(
             startBeamWidth,
-            maxExpandedWidth * Math.max(0.20, nodeSpeed),
+            maxExpandedWidth * Math.max(0.25, nodeSpeed),
             Math.pow(progress, 0.52)
           );
           const halfW = currentWidth * 0.5;
@@ -6738,9 +6778,9 @@
           const leftPos = node.pos.clone().addScaledVector(node.normal, -halfW);
           const rightPos = node.pos.clone().addScaledVector(node.normal, halfW);
 
-          // Elevated above wave surface by +1.85m to ensure zero depth-buffer clipping across all 360 camera angles
-          const leftY = getWaterHeight(leftPos.x, leftPos.z, t) + 1.85;
-          const rightY = getWaterHeight(rightPos.x, rightPos.z, t) + 1.85;
+          // Elevated slightly (+0.35m) with polygonOffset to conform to dynamic rolling ocean waves
+          const leftY = getWaterHeight(leftPos.x, leftPos.z, t) + 0.35;
+          const rightY = getWaterHeight(rightPos.x, rightPos.z, t) + 0.35;
 
           const v0 = i * 2;
           const v1 = v0 + 1;
@@ -6754,14 +6794,13 @@
           ribPos[v1 * 3 + 2] = rightPos.z;
 
           ribUV[v0 * 2] = 0.0;
-          ribUV[v0 * 2 + 1] = progress * 8.0;
+          ribUV[v0 * 2 + 1] = progress * 14.0;
           ribUV[v1 * 2] = 1.0;
-          ribUV[v1 * 2 + 1] = progress * 8.0;
+          ribUV[v1 * 2 + 1] = progress * 14.0;
 
-          const speedFactor = Math.max(0.40, Math.min(1.0, nodeSpeed * 1.8));
-          const alphaFade = Math.pow(1.0 - progress, 0.82) * speedFactor * 0.98;
-          ribAlpha[v0] = alphaFade;
-          ribAlpha[v1] = alphaFade;
+          const finalAlpha = progressFade * ageFade * Math.min(1.0, Math.max(0.20, nodeSpeed * 1.6));
+          ribAlpha[v0] = finalAlpha;
+          ribAlpha[v1] = finalAlpha;
         }
 
         ribbonGeo.attributes.position.needsUpdate = true;
@@ -6769,14 +6808,15 @@
         ribbonGeo.attributes.alpha.needsUpdate = true;
 
         // ----------------------------------------
-        // D2. Bow Wave Shoulder Kelvin V-Crest Generation
+        // D2. Bow Wave Shoulder Kelvin V-Crest Generation (70 Segments)
         // ----------------------------------------
         const bowCenter = shipGroup.position.clone().add(
           new THREE.Vector3(-140, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading)
         );
         const bowDistMoved = bowCenter.distanceTo(lastBowPos);
+        const bowSampleDist = THREE.MathUtils.lerp(2.8, 1.4, speedRatio);
 
-        if (bowDistMoved >= 2.2 && absSpeed > 0.05) {
+        if (bowDistMoved >= bowSampleDist && absSpeed > 0.05) {
           lastBowPos.copy(bowCenter);
 
           for (let i = BOW_SEGMENTS; i > 0; i--) {
@@ -6801,14 +6841,17 @@
           bNode.age += dt;
 
           const prog = i / BOW_SEGMENTS;
-          const bWidth = THREE.MathUtils.lerp(6.0, 160.0 * Math.max(0.15, bNode.speedRatio), Math.pow(prog, 0.65));
+          const bWidth = THREE.MathUtils.lerp(8.0, 180.0 * Math.max(0.20, bNode.speedRatio), Math.pow(prog, 0.62));
           const bHalfW = bWidth * 0.5;
+
+          const bAgeFade = Math.pow(Math.max(0.0, 1.0 - (bNode.age / 12.0)), 1.2);
+          const bProgFade = Math.pow(1.0 - prog, 0.88);
 
           const bLPos = bNode.pos.clone().addScaledVector(bNode.normal, -bHalfW);
           const bRPos = bNode.pos.clone().addScaledVector(bNode.normal, bHalfW);
 
-          const bLY = getWaterHeight(bLPos.x, bLPos.z, t) + 1.85;
-          const bRY = getWaterHeight(bRPos.x, bRPos.z, t) + 1.85;
+          const bLY = getWaterHeight(bLPos.x, bLPos.z, t) + 0.35;
+          const bRY = getWaterHeight(bRPos.x, bRPos.z, t) + 0.35;
 
           const v0 = i * 2;
           const v1 = v0 + 1;
@@ -6822,13 +6865,13 @@
           bWakePos[v1 * 3 + 2] = bRPos.z;
 
           bWakeUV[v0 * 2] = 0.0;
-          bWakeUV[v0 * 2 + 1] = prog * 4.0;
+          bWakeUV[v0 * 2 + 1] = prog * 6.0;
           bWakeUV[v1 * 2] = 1.0;
-          bWakeUV[v1 * 2 + 1] = prog * 4.0;
+          bWakeUV[v1 * 2 + 1] = prog * 6.0;
 
-          const bAlphaFade = Math.pow(1.0 - prog, 0.90) * Math.min(1.0, bNode.speedRatio * 1.5) * 0.88;
-          bWakeAlpha[v0] = bAlphaFade;
-          bWakeAlpha[v1] = bAlphaFade;
+          const bFinalAlpha = bProgFade * bAgeFade * Math.min(1.0, Math.max(0.15, bNode.speedRatio * 1.5));
+          bWakeAlpha[v0] = bFinalAlpha;
+          bWakeAlpha[v1] = bFinalAlpha;
         }
 
         bowWakeGeo.attributes.position.needsUpdate = true;
