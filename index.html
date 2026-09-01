@@ -1387,8 +1387,8 @@
       const camera = new THREE.PerspectiveCamera(
         48,
         window.innerWidth / window.innerHeight,
-        1.0,
-        600000
+        2.0,
+        350000
       );
       camera.setViewOffset(
         window.innerWidth,
@@ -3334,14 +3334,14 @@
       const belizePortGroup = new THREE.Group();
       belizePortGroup.position.set(-31572, 0, 57481);
 
-      // Belize Mainland Coastal Peninsula (West of harbour, X <= -600)
-      const belizeMainland = new THREE.Mesh(new THREE.BoxGeometry(2800, 8, 3400), coastalGrassMat);
-      belizeMainland.position.set(-2000, 3, 0);
+      // Belize Mainland Coastal Peninsula (West of harbour, X in [-3400, -800])
+      const belizeMainland = new THREE.Mesh(new THREE.BoxGeometry(2600, 8, 3400), coastalGrassMat);
+      belizeMainland.position.set(-2100, 3.5, 0);
       belizePortGroup.add(belizeMainland);
 
-      // Fort Point Sandy Beach Strip
-      const belizeBeach = new THREE.Mesh(new THREE.BoxGeometry(350, 6, 2200), sandyBeachMat);
-      belizeBeach.position.set(-775, 2.5, 0);
+      // Fort Point Sandy Beach Strip (Step-down shoreline, X in [-800, -550])
+      const belizeBeach = new THREE.Mesh(new THREE.BoxGeometry(250, 6, 2200), sandyBeachMat);
+      belizeBeach.position.set(-675, 2.0, 0);
       belizePortGroup.add(belizeBeach);
 
       // Caye Caulker & Ambergris Palm Cays (3.2km offshore to the East)
@@ -3363,19 +3363,19 @@
 
       // Historic Baron Bliss Lighthouse on Fort Point (55m tall)
       const blBase = new THREE.Mesh(new THREE.CylinderGeometry(14, 18, 14, 16), terminalFacadeMat);
-      blBase.position.set(-620, 10, 350);
+      blBase.position.set(-640, 10, 350);
       belizePortGroup.add(blBase);
 
       const blTower1 = new THREE.Mesh(new THREE.CylinderGeometry(10, 14, 24, 16), lighthouseRedMat);
-      blTower1.position.set(-620, 28, 350);
+      blTower1.position.set(-640, 28, 350);
       belizePortGroup.add(blTower1);
 
       const blTower2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 10, 20, 16), terminalFacadeMat);
-      blTower2.position.set(-620, 48, 350);
+      blTower2.position.set(-640, 48, 350);
       belizePortGroup.add(blTower2);
 
       const blLantern = new THREE.Mesh(new THREE.CylinderGeometry(7, 8, 12, 16), glassWindowMat);
-      blLantern.position.set(-620, 62, 350);
+      blLantern.position.set(-640, 62, 350);
       belizePortGroup.add(blLantern);
 
       // Fort Street Tourism Village (Located safely on Fort Point shore)
@@ -3410,13 +3410,14 @@
       const cozumelPortGroup = new THREE.Group();
       cozumelPortGroup.position.set(-24558, 0, 41402);
 
-      // Cozumel Island Landmass (East side of Cozumel Channel, X >= 400, Z in [-1800, 1800])
-      const cozIsland = new THREE.Mesh(new THREE.BoxGeometry(1400, 10, 3600), sandyBeachMat);
-      cozIsland.position.set(1100, 4, 0);
+      // Cozumel Island Sandy Beach Base (X in [380, 1820], Z in [-1850, 1850])
+      const cozIsland = new THREE.Mesh(new THREE.BoxGeometry(1440, 7, 3700), sandyBeachMat);
+      cozIsland.position.set(1100, 2.5, 0);
       cozumelPortGroup.add(cozIsland);
 
-      const cozJungle = new THREE.Mesh(new THREE.BoxGeometry(1000, 12, 3200), tropicalJungleMat);
-      cozJungle.position.set(1300, 6, 0);
+      // Cozumel Tropical Jungle Interior (Elevated interior, X in [700, 1600], Z in [-1500, 1500])
+      const cozJungle = new THREE.Mesh(new THREE.BoxGeometry(900, 10, 3000), tropicalJungleMat);
+      cozJungle.position.set(1150, 5.0, 0);
       cozumelPortGroup.add(cozJungle);
 
       // 850m Concrete Mega-Pier (Extending westward into Cozumel Channel from shore X=425 to X=-425)
@@ -3434,13 +3435,13 @@
         cozumelPortGroup.add(bollard);
       }
 
-      // Mainland Mexico / Playa del Carmen Coastline (14km across channel to the West, X <= -6500)
-      const mainlandYucatan = new THREE.Mesh(new THREE.BoxGeometry(3000, 10, 4000), tropicalJungleMat);
-      mainlandYucatan.position.set(-8000, 4, 0);
+      // Mainland Mexico / Playa del Carmen Coastline (X in [-9600, -7000])
+      const mainlandYucatan = new THREE.Mesh(new THREE.BoxGeometry(2600, 10, 4000), tropicalJungleMat);
+      mainlandYucatan.position.set(-8300, 4, 0);
       cozumelPortGroup.add(mainlandYucatan);
 
-      const mainlandBeach = new THREE.Mesh(new THREE.BoxGeometry(400, 8, 3800), sandyBeachMat);
-      mainlandBeach.position.set(-6300, 3.5, 0);
+      const mainlandBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 8, 3800), sandyBeachMat);
+      mainlandBeach.position.set(-6850, 3.0, 0);
       cozumelPortGroup.add(mainlandBeach);
 
       // Mayan Ceremonial Monument on Cozumel Shore (X = 450)
@@ -3467,9 +3468,9 @@
       const roatanPortGroup = new THREE.Group();
       roatanPortGroup.position.set(-22428, 0, 63924);
 
-      // Roatan Island Narrow Landmass (North of Coxen Hole, Z >= 400)
-      const roatanIsland = new THREE.Mesh(new THREE.BoxGeometry(4200, 10, 1600), sandyBeachMat);
-      roatanIsland.position.set(0, 4, 1200);
+      // Roatan Island Narrow Landmass (North of Coxen Hole, Z in [450, 1950])
+      const roatanIsland = new THREE.Mesh(new THREE.BoxGeometry(4200, 8, 1500), sandyBeachMat);
+      roatanIsland.position.set(0, 3.5, 1200);
       roatanPortGroup.add(roatanIsland);
 
       // Volcanic Emerald Mountain Chain (Along island spine, Z = 1200)
@@ -3498,13 +3499,14 @@
       const costaMayaPortGroup = new THREE.Group();
       costaMayaPortGroup.position.set(-28835, 0, 50786);
 
-      // Yucatan Caribbean Mainland Coastline (West side, X <= -500)
-      const cmLand = new THREE.Mesh(new THREE.BoxGeometry(2600, 10, 3200), tropicalJungleMat);
-      cmLand.position.set(-1800, 4, 0);
+      // Yucatan Caribbean Mainland Jungle (X in [-3150, -750])
+      const cmLand = new THREE.Mesh(new THREE.BoxGeometry(2400, 10, 3200), tropicalJungleMat);
+      cmLand.position.set(-1950, 4.5, 0);
       costaMayaPortGroup.add(cmLand);
 
-      const cmBeach = new THREE.Mesh(new THREE.BoxGeometry(300, 8, 3000), sandyBeachMat);
-      cmBeach.position.set(-650, 3.5, 0);
+      // Sandy Shoreline Strip (X in [-750, -500])
+      const cmBeach = new THREE.Mesh(new THREE.BoxGeometry(250, 7, 3000), sandyBeachMat);
+      cmBeach.position.set(-625, 3.0, 0);
       costaMayaPortGroup.add(cmBeach);
 
       // 1,000m Deep-Sea Finger Pier (Jutting eastward from shore X=-500 to X=+500 into open Caribbean Sea)
