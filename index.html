@@ -5730,39 +5730,43 @@
       // ==========================================
       const LAND_OBSTACLES = [
         // --- 1. Port Tampa Bay Area ---
-        // Florida Mainland Bulkhead / Downtown / Channelside / Hookers Point: East & North of channel
-        { minX: -6000, maxX: 4500, minZ: 95, maxZ: 4000, desc: "Tampa Wharf / Downtown / Hookers Point" },
-        // Harbour & Davis Islands / TGH: South of channel
-        { minX: -2600, maxX: 2600, minZ: -4000, maxZ: -260, desc: "Harbour & Davis Islands / TGH" },
-        // MacDill AFB Peninsula
-        { minX: -5500, maxX: -1600, minZ: -4500, maxZ: -1600, desc: "MacDill Peninsula" },
-        // Pinellas / St. Petersburg Peninsula (North of channel, West of bay)
-        { minX: -16000, maxX: -6000, minZ: 900, maxZ: 8000, desc: "Pinellas Peninsula" },
-        // Manatee Peninsula / Anna Maria Island (South of channel)
-        { minX: -16000, maxX: -6000, minZ: -8000, maxZ: -900, desc: "Manatee Peninsula" },
+        // Tampa Terminal 2 & 3 / Channelside Promenade / Cruise Wharves (North of channel)
+        { minX: -1200, maxX: 1400, minZ: 110, maxZ: 600, desc: "Tampa Cruise Terminals & Wharves" },
+        // Sparkman Wharf & American Victory Slip
+        { minX: -800, maxX: -100, minZ: 95, maxZ: 450, desc: "Sparkman Wharf" },
+        // Hookers Point Container & Tank Farm (East of channel)
+        { minX: 1400, maxX: 3500, minZ: 180, maxZ: 2400, desc: "Hookers Point Industrial Terminal" },
+        // Harbour & Davis Islands / TGH (South of channel)
+        { minX: -600, maxX: 800, minZ: -1200, maxZ: -270, desc: "Davis Islands & TGH" },
+        // MacDill AFB Peninsula (Southwest tip of Interbay peninsula)
+        { minX: -5200, maxX: -2800, minZ: -4500, maxZ: -1800, desc: "MacDill Peninsula" },
+        // Pinellas / St. Petersburg Coastline (North of Skyway Bridge)
+        { minX: -13000, maxX: -6500, minZ: 1200, maxZ: 7000, desc: "Pinellas Coastline" },
+        // Manatee / Bradenton Coastline (South of Skyway Bridge)
+        { minX: -13000, maxX: -6500, minZ: -7000, maxZ: -1200, desc: "Manatee Coastline" },
         // Skyway Bridge North and South Cable-Stay Pylons & Dolphin Islands
-        { minX: -5620, maxX: -5380, minZ: 330, maxZ: 440, desc: "Skyway North Tower & Dolphins" },
-        { minX: -5620, maxX: -5380, minZ: -440, maxZ: -330, desc: "Skyway South Tower & Dolphins" },
+        { minX: -5580, maxX: -5420, minZ: 340, maxZ: 420, desc: "Skyway North Tower & Dolphins" },
+        { minX: -5580, maxX: -5420, minZ: -420, maxZ: -340, desc: "Skyway South Tower & Dolphins" },
 
         // --- 2. Belize City Area (Origin: -31572, 57481) ---
-        // Belize Mainland Coast
-        { minX: -31572 - 12000, maxX: -31572 - 250, minZ: 57481 - 7000, maxZ: 57481 + 9000, desc: "Belize Mainland" },
-        // Barrier Reef & Cays offshore (East)
-        { minX: -31572 + 3800, maxX: -31572 + 5400, minZ: 57481 - 8500, maxZ: 57481 + 8500, desc: "Belize Barrier Reef" },
+        // Belize Mainland Coast (West of city)
+        { minX: -31572 - 8000, maxX: -31572 - 350, minZ: 57481 - 4000, maxZ: 57481 + 4000, desc: "Belize Mainland" },
+        // Great Barrier Reef & Cays (Far East offshore)
+        { minX: -31572 + 3900, maxX: -31572 + 5200, minZ: 57481 - 6000, maxZ: 57481 + 6000, desc: "Belize Barrier Reef" },
 
         // --- 3. Cozumel Area (Origin: -24558, 41402) ---
-        // Cozumel Island (East of channel)
-        { minX: -24558 + 160, maxX: -24558 + 7000, minZ: 41402 - 12000, maxZ: 41402 + 12000, desc: "Cozumel Island" },
-        // Mainland Mexico / Riviera Maya (West of channel)
-        { minX: -24558 - 22000, maxX: -24558 - 9800, minZ: 41402 - 14000, maxZ: 41402 + 14000, desc: "Mainland Mexico Coast" },
+        // Cozumel Island (East of cruise pier and channel)
+        { minX: -24558 + 200, maxX: -24558 + 6000, minZ: 41402 - 8000, maxZ: 41402 + 8000, desc: "Cozumel Island" },
+        // Mainland Mexico / Playa del Carmen Coastline (West across 14km channel)
+        { minX: -24558 - 14000, maxX: -24558 - 5000, minZ: 41402 - 8000, maxZ: 41402 + 8000, desc: "Mainland Mexico Coast" },
 
-        // --- 4. Roatan Island (Origin: -22428, 63924) ---
-        // Roatan Island (North shore)
-        { minX: -22428 - 12000, maxX: -22428 + 12000, minZ: 63924 + 120, maxZ: 63924 + 4500, desc: "Roatan Island" },
+        // --- 4. Roatan Island, Honduras (Origin: -22428, 63924) ---
+        // Roatan Island (Landmass south of pier approach)
+        { minX: -22428 - 3000, maxX: -22428 + 3000, minZ: 63924 + 140, maxZ: 63924 + 3500, desc: "Roatan Island" },
 
-        // --- 5. Puerto Costa Maya (Origin: -28835, 50786) ---
-        // Yucatan Coastline (West)
-        { minX: -28835 - 12000, maxX: -28835 - 90, minZ: 50786 - 12000, maxZ: 50786 + 12000, desc: "Costa Maya Coast" }
+        // --- 5. Puerto Costa Maya, Mexico (Origin: -28835, 50786) ---
+        // Costa Maya Mainland (West of cruise pier)
+        { minX: -28835 - 6000, maxX: -28835 - 120, minZ: 50786 - 4000, maxZ: 50786 + 4000, desc: "Costa Maya Coast" }
       ];
 
       // High-Resolution Full-Hull Collision Mesh Grid
