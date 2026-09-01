@@ -239,6 +239,115 @@
         transition: left 0.1s ease;
       }
 
+      /* Waypoint & Directional Pointer HUD */
+      .waypoint-box {
+        background: linear-gradient(135deg, rgba(0, 32, 64, 0.85), rgba(4, 18, 36, 0.9));
+        border: 1px solid rgba(0, 221, 255, 0.45);
+        border-radius: 10px;
+        padding: 8px 10px;
+        margin-bottom: 9px;
+        box-shadow: inset 0 0 14px rgba(0, 160, 255, 0.18), 0 4px 12px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .waypoint-box:hover {
+        border-color: #00ffaa;
+        background: linear-gradient(135deg, rgba(0, 42, 80, 0.9), rgba(6, 26, 48, 0.95));
+      }
+      .waypoint-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3px;
+      }
+      .waypoint-tag {
+        font-size: 9px;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        color: #00ddff;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .waypoint-badge {
+        font-size: 9px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: #0066cc;
+        color: #fff;
+        font-weight: 700;
+        letter-spacing: 0.3px;
+      }
+      .waypoint-name {
+        font-size: 12px;
+        font-weight: 700;
+        color: #ffffff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 6px;
+      }
+      .waypoint-nav {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+      }
+      .waypoint-dial {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(0, 50, 100, 0.95), rgba(0, 15, 35, 0.98));
+        border: 2px solid #00ddff;
+        box-shadow: 0 0 10px rgba(0, 221, 255, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .waypoint-arrow {
+        font-size: 18px;
+        color: #00ff88;
+        line-height: 1;
+        transform-origin: center center;
+        transition: transform 0.08s linear, color 0.2s ease;
+        text-shadow: 0 0 8px currentColor;
+        user-select: none;
+      }
+      .waypoint-details {
+        flex: 1;
+        min-width: 0;
+      }
+      .waypoint-bearing {
+        font-size: 10px;
+        font-weight: 700;
+        color: #00ff88;
+        font-family: monospace;
+        letter-spacing: 0.2px;
+      }
+      .waypoint-dist {
+        font-size: 11px;
+        font-weight: 600;
+        color: #d0e4ff;
+        margin-top: 1px;
+      }
+      .waypoint-btn {
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: #fff;
+        border-radius: 6px;
+        padding: 5px 7px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+      }
+      .waypoint-btn:hover {
+        background: #0077ff;
+        border-color: #55aaff;
+        transform: scale(1.08);
+      }
+
       /* Toolbar Buttons - Stacked Down the Right Side */
       #toolbar {
         position: absolute;
@@ -1115,6 +1224,26 @@
           <span>Ship Navigation</span>
           <span id="helm-status" style="color: #00ff88; font-size: 10px;">ONLINE</span>
         </div>
+
+        <!-- Next Port / Destination Waypoint & Directional Pointer -->
+        <div class="waypoint-box" id="waypoint-box" title="Click to cycle next cruise destination / port">
+          <div class="waypoint-top">
+            <span class="waypoint-tag">🧭 NEXT DESTINATION</span>
+            <span id="waypoint-day-badge" class="waypoint-badge">DAY 2</span>
+          </div>
+          <div id="waypoint-name" class="waypoint-name">Day at Sea (Gulf of Mexico)</div>
+          <div class="waypoint-nav">
+            <div class="waypoint-dial" title="Direction to Next Waypoint">
+              <div id="waypoint-arrow" class="waypoint-arrow">▲</div>
+            </div>
+            <div class="waypoint-details">
+              <div id="waypoint-bearing" class="waypoint-bearing">🎯 ON COURSE (195°)</div>
+              <div id="waypoint-dist" class="waypoint-dist">410 NM • ~20.5 hrs</div>
+            </div>
+            <button id="btn-next-waypoint" class="waypoint-btn" title="Cycle Next Destination">⏭</button>
+          </div>
+        </div>
+
         <div class="helm-stat">
           <span>Speed:</span>
           <span id="hud-speed" class="helm-val">0.0 kts</span>
@@ -5230,6 +5359,9 @@
         const port = CRUISE_PORTS[portIndex];
         if (!port) return;
 
+        currentWaypointIndex = portIndex;
+        updateWaypointDisplay();
+
         autopilotActive = true;
         autopilotTargetPort = port;
         shipState.targetSpeed = 24.0; // Cruise ahead at full speed
@@ -5241,6 +5373,9 @@
       function jumpToPort(portIndex) {
         const port = CRUISE_PORTS[portIndex];
         if (!port) return;
+
+        currentWaypointIndex = (portIndex + 1) % CRUISE_PORTS.length;
+        updateWaypointDisplay();
 
         autopilotActive = false;
         autopilotTargetPort = null;
@@ -5724,6 +5859,63 @@
         dolphinGroup.add(mesh);
         return mesh;
       });
+
+      // ==========================================
+      // 8.5. 3D & 2D DIRECTIONAL WAYPOINT NAVIGATION SYSTEM
+      // ==========================================
+      let currentWaypointIndex = 1; // Default to Day 2: Day at Sea 1
+
+      const navArrowGroup = new THREE.Group();
+      scene.add(navArrowGroup);
+
+      // Glowing 3D Navigation Arrow Pointer (Tapered Chevron / Cone)
+      const navArrowGeo = new THREE.ConeGeometry(5.2, 18.0, 4);
+      navArrowGeo.rotateX(Math.PI / 2); // Point forward along local -Z
+      const navArrowMat = new THREE.MeshBasicMaterial({
+        color: 0x00ff88,
+        transparent: true,
+        opacity: 0.88,
+        depthWrite: false
+      });
+      const navArrowMesh = new THREE.Mesh(navArrowGeo, navArrowMat);
+      navArrowGroup.add(navArrowMesh);
+
+      // Outer Navigational Compass Beacon Ring
+      const navRingGeo = new THREE.RingGeometry(9.0, 11.2, 32);
+      navRingGeo.rotateX(-Math.PI / 2);
+      const navRingMat = new THREE.MeshBasicMaterial({
+        color: 0x00ff88,
+        transparent: true,
+        opacity: 0.65,
+        side: THREE.DoubleSide,
+        depthWrite: false
+      });
+      const navRingMesh = new THREE.Mesh(navRingGeo, navRingMat);
+      navArrowGroup.add(navRingMesh);
+
+      function updateWaypointDisplay() {
+        const port = CRUISE_PORTS[currentWaypointIndex] || CRUISE_PORTS[1];
+        const nameEl = document.getElementById("waypoint-name");
+        const dayEl = document.getElementById("waypoint-day-badge");
+        if (nameEl) nameEl.textContent = port.name;
+        if (dayEl) dayEl.textContent = port.day ? port.day.toUpperCase() : `LEG ${currentWaypointIndex}`;
+      }
+
+      const btnNextWaypoint = document.getElementById("btn-next-waypoint");
+      if (btnNextWaypoint) {
+        btnNextWaypoint.addEventListener("click", (e) => {
+          e.stopPropagation();
+          currentWaypointIndex = (currentWaypointIndex + 1) % CRUISE_PORTS.length;
+          updateWaypointDisplay();
+        });
+      }
+      const waypointBox = document.getElementById("waypoint-box");
+      if (waypointBox) {
+        waypointBox.addEventListener("click", () => {
+          currentWaypointIndex = (currentWaypointIndex + 1) % CRUISE_PORTS.length;
+          updateWaypointDisplay();
+        });
+      }
 
       // ==========================================
       // 9. LAND COLLISION & GRACEFUL SHORELINE DEFLECTION SYSTEM
@@ -6447,7 +6639,7 @@
         sprayGeo.attributes.size.needsUpdate = true;
 
         // ----------------------------------------
-        // F. Update Navigation HUD Display
+        // F. Update Navigation HUD Display & Waypoint Pointer
         // ----------------------------------------
         hudSpeed.textContent = `${Math.abs(shipState.speed).toFixed(1)} kts ${shipState.speed < -0.1 ? '(Astern)' : ''}`;
         
@@ -6463,6 +6655,78 @@
         const latVal = 27.9506 - (shipGroup.position.z / 5500.0);
         const lonVal = -82.4572 + (shipGroup.position.x / 5500.0);
         hudGps.textContent = `${Math.abs(latVal).toFixed(3)}°${latVal >= 0 ? 'N' : 'S'} ${Math.abs(lonVal).toFixed(3)}°W`;
+
+        // Update Directional Waypoint Arrow & Compass Bearing
+        const targetPort = CRUISE_PORTS[currentWaypointIndex] || CRUISE_PORTS[1];
+        const dxToTarget = targetPort.worldX - shipGroup.position.x;
+        const dzToTarget = targetPort.worldZ - shipGroup.position.z;
+        const distUnitsToTarget = Math.hypot(dxToTarget, dzToTarget);
+        const distNMToTarget = (distUnitsToTarget * (60.0 / 5500.0)).toFixed(0);
+
+        // Position 3D Navigational Waypoint Arrow floating 36m above ship bow stem
+        const bowWorldOffset = new THREE.Vector3(-120, 36 + Math.sin(t * 3.2) * 2.2, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), shipState.heading);
+        navArrowGroup.position.copy(shipGroup.position).add(bowWorldOffset);
+
+        // Point 3D arrow directly at target destination in world space
+        navArrowMesh.lookAt(targetPort.worldX, navArrowGroup.position.y, targetPort.worldZ);
+        navRingMesh.rotation.y = t * 1.5;
+
+        // Calculate Target World Angle & Relative Bearing to Ship
+        const targetHeading = Math.atan2(-dzToTarget, -dxToTarget);
+        let relativeBearing = targetHeading - shipState.heading;
+        while (relativeBearing > Math.PI) relativeBearing -= Math.PI * 2;
+        while (relativeBearing < -Math.PI) relativeBearing += Math.PI * 2;
+
+        const relDeg = relativeBearing * (180 / Math.PI);
+        const absRelDeg = Math.abs(relDeg);
+
+        let targetCompassDeg = Math.round((-targetHeading * (180 / Math.PI)) % 360);
+        if (targetCompassDeg < 0) targetCompassDeg += 360;
+
+        // Update 2D Compass Needle rotation (relative to ship orientation)
+        const waypointArrowEl = document.getElementById("waypoint-arrow");
+        if (waypointArrowEl) {
+          waypointArrowEl.style.transform = `rotate(${relDeg.toFixed(1)}deg)`;
+          if (absRelDeg < 6) {
+            waypointArrowEl.style.color = "#00ff88"; // Emerald Green on course
+            navArrowMat.color.setHex(0x00ff88);
+            navRingMat.color.setHex(0x00ff88);
+          } else if (relDeg < 0) {
+            waypointArrowEl.style.color = "#00ddff"; // Cyan Port
+            navArrowMat.color.setHex(0x00ddff);
+            navRingMat.color.setHex(0x00ddff);
+          } else {
+            waypointArrowEl.style.color = "#ffaa00"; // Amber Starboard
+            navArrowMat.color.setHex(0xffaa00);
+            navRingMat.color.setHex(0xffaa00);
+          }
+        }
+
+        const waypointBearingEl = document.getElementById("waypoint-bearing");
+        if (waypointBearingEl) {
+          if (absRelDeg < 6) {
+            waypointBearingEl.textContent = `🎯 ON COURSE (${targetCompassDeg}°)`;
+            waypointBearingEl.style.color = "#00ff88";
+          } else if (relDeg < 0) {
+            waypointBearingEl.textContent = `◀ ${absRelDeg.toFixed(0)}° PORT (${targetCompassDeg}°)`;
+            waypointBearingEl.style.color = "#00ddff";
+          } else {
+            waypointBearingEl.textContent = `▶ ${absRelDeg.toFixed(0)}° STBD (${targetCompassDeg}°)`;
+            waypointBearingEl.style.color = "#ffaa00";
+          }
+        }
+
+        const waypointDistEl = document.getElementById("waypoint-dist");
+        if (waypointDistEl) {
+          const estHours = (distNMToTarget / Math.max(12, absSpeed || 20)).toFixed(1);
+          waypointDistEl.textContent = `${distNMToTarget} NM • ~${estHours} hrs`;
+        }
+
+        // Auto-advance waypoint when arriving within 220 units of target port
+        if (distUnitsToTarget < 220 && !autopilotActive) {
+          currentWaypointIndex = (currentWaypointIndex + 1) % CRUISE_PORTS.length;
+          updateWaypointDisplay();
+        }
 
         // Update Live Google / Leaflet Map Ship Marker & Wake Trail
         if (shipLeafletMarker) {
