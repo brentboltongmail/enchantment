@@ -1845,7 +1845,7 @@
         flatShading: false
       });
 
-      // Dynamic Whitecap Seafoam on Wave Crests (Procedural GLSL - No Splotches)
+      // Dynamic Multi-Directional In-Place Morphing Ocean Shader Engine
       waterMat.onBeforeCompile = (shader) => {
         shader.uniforms.uTime = { value: 0 };
         shader.uniforms.uFoamTex = { value: seafoamTexture };
@@ -1868,21 +1868,102 @@
           varying vec3 vOceanWorldPos;
           ${shader.fragmentShader}
         `.replace(
+          '#include <normal_fragment_maps>',
+          `
+          // =========================================================
+          // Dual-Phase In-Place Wave Morphing Cycle (Waves recreate in place every ~3.6s)
+          // =========================================================
+          float waveCycle = uTime * 0.28;
+          float phaseA = fract(waveCycle);
+          float phaseB = fract(waveCycle + 0.5);
+
+          // Smooth sinusoidal cross-fade weights
+          float weightA = sin(phaseA * 3.14159265);
+          float weightB = sin(phaseB * 3.14159265);
+          float invSum = 1.0 / (weightA + weightB + 0.0001);
+          weightA *= invSum;
+          weightB *= invSum;
+
+          // 4 Cross-directional wave vectors (Interference pattern)
+          vec2 dir1 = vec2( 0.866,  0.500); // +30 deg dominant swell
+          vec2 dir2 = vec2(-0.500,  0.866); // +120 deg cross swell
+          vec2 dir3 = vec2(-0.707, -0.707); // -135 deg counter chop
+          vec2 dir4 = vec2( 0.383, -0.924); // -67 deg capillary ripple
+
+          vec2 uvBase = vOceanWorldPos.xz * 0.009;
+
+          // Multi-layer UV offsets for Phase A
+          vec2 uvA1 = uvBase * 1.00 + dir1 * (phaseA * 0.35);
+          vec2 uvA2 = uvBase * 2.20 + dir2 * (phaseA * 0.28);
+          vec2 uvA3 = uvBase * 4.60 + dir3 * (phaseA * 0.45);
+
+          // Multi-layer UV offsets for Phase B
+          vec2 uvB1 = uvBase * 1.15 + dir2 * (phaseB * 0.32);
+          vec2 uvB2 = uvBase * 2.45 + dir1 * (phaseB * 0.26);
+          vec2 uvB3 = uvBase * 4.85 + dir4 * (phaseB * 0.48);
+
+          // Sample normal maps for both phases
+          vec3 nA1 = texture2D(normalMap, uvA1).xyz * 2.0 - 1.0;
+          vec3 nA2 = texture2D(normalMap, uvA2).xyz * 2.0 - 1.0;
+          vec3 nA3 = texture2D(normalMap, uvA3).xyz * 2.0 - 1.0;
+          vec3 normA = normalize(nA1 + nA2 * 0.70 + nA3 * 0.45);
+
+          vec3 nB1 = texture2D(normalMap, uvB1).xyz * 2.0 - 1.0;
+          vec3 nB2 = texture2D(normalMap, uvB2).xyz * 2.0 - 1.0;
+          vec3 nB3 = texture2D(normalMap, uvB3).xyz * 2.0 - 1.0;
+          vec3 normB = normalize(nB1 + nB2 * 0.70 + nB3 * 0.45);
+
+          // Blended in-place regenerating normal
+          vec3 morphNormal = normalize(normA * weightA + normB * weightB);
+
+          // In-Place Standing Wave Interference Perturbation
+          float stX = sin(vOceanWorldPos.x * 0.08 + sin(uTime * 0.7) * 1.2) * cos(vOceanWorldPos.z * 0.08 + cos(uTime * 0.6) * 1.2);
+          float stZ = cos(vOceanWorldPos.x * 0.06 - uTime * 0.4) * sin(vOceanWorldPos.z * 0.06 + uTime * 0.5);
+          float stPulse = sin(uTime * 1.4 + vOceanWorldPos.x * 0.03 + vOceanWorldPos.z * 0.03) * 0.5 + 0.5;
+
+          vec3 standingNormal = vec3(
+            cos(vOceanWorldPos.x * 0.16 + uTime * 1.1) * 0.35 * stPulse * (stX + 0.5),
+            1.0,
+            sin(vOceanWorldPos.z * 0.16 + uTime * 1.0) * 0.35 * stPulse * (stZ + 0.5)
+          );
+          standingNormal = normalize(standingNormal);
+
+          vec3 finalWaveNormal = normalize(mix(morphNormal, standingNormal, 0.35));
+          finalWaveNormal.xy *= normalScale;
+
+          #ifdef USE_TANGENT
+            mat3 vTBN = mat3(tangent, bitangent, normal);
+            normal = normalize(vTBN * finalWaveNormal);
+          #else
+            vec3 worldUp = vec3(0.0, 1.0, 0.0);
+            vec3 worldTangent = normalize(cross(worldUp, normal));
+            if (length(worldTangent) < 0.01) worldTangent = vec3(1.0, 0.0, 0.0);
+            vec3 worldBitangent = cross(normal, worldTangent);
+            mat3 tbnMat = mat3(worldTangent, worldBitangent, normal);
+            normal = normalize(tbnMat * finalWaveNormal);
+          #endif
+          `
+        ).replace(
           '#include <color_fragment>',
           `
           #include <color_fragment>
 
-          // Dynamic Whitecap Froth on High Wave Peaks (Seamless, No Circular Splotches)
+          // Dynamic Whitecap Seafoam on High Wave Peaks & Morphing Wave Crests
           float crestElevation = vOceanWorldPos.y;
-          float crestFactor = smoothstep(3.2, 5.8, crestElevation);
+          float crestFactor = smoothstep(2.4, 5.0, crestElevation);
 
-          float waveChop = sin(vOceanWorldPos.x * 0.24 + uTime * 0.5) * cos(vOceanWorldPos.z * 0.24 - uTime * 0.45);
-          float fineChop = sin((vOceanWorldPos.x + vOceanWorldPos.z) * 0.56 + uTime * 0.9);
-          float foamPattern = smoothstep(0.42, 0.85, (waveChop * 0.6 + fineChop * 0.4) * 0.5 + 0.5);
+          float waveInterference = sin(vOceanWorldPos.x * 0.18 + uTime * 0.65) * cos(vOceanWorldPos.z * 0.18 - uTime * 0.55);
+          float morphChop = sin((vOceanWorldPos.x * 0.42 + vOceanWorldPos.z * 0.38) + sin(uTime * 0.9) * 2.0);
+          float dynamicFoam = smoothstep(0.38, 0.88, (waveInterference * 0.55 + morphChop * 0.45) * 0.5 + 0.5);
 
-          float whitecap = crestFactor * foamPattern;
-          vec3 whitecapColor = vec3(0.92, 0.96, 1.0);
-          diffuseColor.rgb = mix(diffuseColor.rgb, whitecapColor, whitecap * 0.85);
+          float whitecap = crestFactor * dynamicFoam;
+          vec3 deepWater = vec3(0.02, 0.16, 0.32);
+          vec3 crestWater = vec3(0.06, 0.36, 0.52);
+          vec3 whitecapColor = vec3(0.92, 0.97, 1.0);
+
+          float sssFactor = smoothstep(-2.0, 4.5, crestElevation) * 0.35;
+          diffuseColor.rgb = mix(deepWater, crestWater, sssFactor);
+          diffuseColor.rgb = mix(diffuseColor.rgb, whitecapColor, whitecap * 0.90);
           `
         );
       };
@@ -6199,22 +6280,28 @@
         oceanNormalMap.offset.y = (shipGroup.position.z * 0.0008 + t * 0.011) % 1;
 
         // ----------------------------------------
-        // C. Multi-Fractal Ocean Wave Displacement (Stationary World Wave Field)
+        // C. Multi-Directional In-Place Morphing Ocean Waves (Standing Wave & Cross-Swell System)
         // ----------------------------------------
         function getWaterHeight(x, z, time) {
-          const envelope = 0.7 + 0.3 * Math.sin(x * 0.0064 + z * 0.0048 + time * 0.22) * Math.cos(x * 0.0044 - z * 0.0076 + time * 0.17);
-          const qx = Math.sin(x * 0.012 + z * 0.008 + time * 0.32) * 6.0;
-          const qy = Math.cos(z * 0.012 - x * 0.008 + time * 0.30) * 6.0;
+          // Standing wave pulse envelopes: waves breathe, swell, crest and recreate in place every ~3.6s
+          const env1 = 0.65 + 0.35 * Math.sin(x * 0.005 + z * 0.004 + time * 0.28);
+          const env2 = 0.65 + 0.35 * Math.cos(x * 0.004 - z * 0.006 + time * 0.22);
+          const pulse1 = Math.sin(time * 1.57 + x * 0.008 + z * 0.006) * 0.5 + 0.5; // ~4.0s cycle
+          const pulse2 = Math.cos(time * 1.39 - x * 0.007 + z * 0.009) * 0.5 + 0.5; // ~4.5s cycle
 
-          // Doubled wave density: spatial frequencies doubled across all octaves
-          const w1 = Math.sin(((x + qx) * 0.74 + (z + qy) * 0.67) * 0.0260 + time * 0.62) * 2.65 * envelope;
-          const w2 = Math.cos(((x - qy) * -0.58 + (z + qx) * 0.81) * 0.0220 + time * 0.55) * 2.05 * envelope;
-          const w3 = Math.sin((x * 0.92 - z * 0.39) * 0.0500 + time * 0.82) * 1.05;
-          const w4 = Math.cos((x * 0.31 + z * 0.95) * 0.0780 + time * 1.05) * 0.72;
-          const w5 = Math.sin((x * -0.83 - z * 0.55) * 0.1280 + time * 1.30) * 0.42;
-          const w6 = Math.sin((x * 0.62 - z * 0.78) * 0.2080 + time * 1.60) * 0.24;
+          // In-place standing wave peaks (formed by counter-propagating cross waves)
+          const standing1 = Math.sin(x * 0.018 + Math.sin(time * 0.7) * 1.2) * Math.cos(z * 0.018 + Math.cos(time * 0.6) * 1.2) * 1.85 * pulse1;
+          const standing2 = Math.cos(x * 0.034 - z * 0.026) * Math.sin(x * 0.026 + z * 0.034) * Math.sin(time * 1.75) * 1.25 * pulse2;
 
-          return w1 + w2 + w3 + w4 + w5 + w6;
+          // Cross-directional intersecting swells
+          const w1 = Math.sin((x * 0.866 + z * 0.500) * 0.022 + time * 0.58) * 2.15 * env1;
+          const w2 = Math.cos((-x * 0.500 + z * 0.866) * 0.026 + time * 0.52) * 1.75 * env2;
+          const w3 = Math.sin((-x * 0.707 - z * 0.707) * 0.048 + time * 0.78) * 0.95;
+          const w4 = Math.cos((x * 0.383 - z * 0.924) * 0.076 + time * 1.02) * 0.65;
+          const w5 = Math.sin((x * 0.650 + z * 0.750) * 0.125 + time * 1.30) * 0.38;
+          const w6 = Math.cos((-x * 0.720 + z * 0.690) * 0.195 + time * 1.65) * 0.22;
+
+          return standing1 + standing2 + w1 + w2 + w3 + w4 + w5 + w6;
         }
 
         // Dynamic Infinite Ocean Tracking (Water plane follows vessel everywhere)
