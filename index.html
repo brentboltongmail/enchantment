@@ -3294,14 +3294,14 @@
       const belizePortGroup = new THREE.Group();
       belizePortGroup.position.set(-31572, 0, 57481);
 
-      // Belize Mainland Coastal Peninsula (West side)
+      // Belize Mainland Coastal Peninsula (West side, X <= -650)
       const belizeMainland = new THREE.Mesh(new THREE.BoxGeometry(10000, 8, 14000), coastalGrassMat);
-      belizeMainland.position.set(-5500, 3, 2000);
+      belizeMainland.position.set(-6000, 3, 2000);
       belizePortGroup.add(belizeMainland);
 
       // Fort Point Sandy Beach Strip
-      const belizeBeach = new THREE.Mesh(new THREE.BoxGeometry(1800, 6, 2200), sandyBeachMat);
-      belizeBeach.position.set(-400, 2.5, 900);
+      const belizeBeach = new THREE.Mesh(new THREE.BoxGeometry(1200, 6, 2200), sandyBeachMat);
+      belizeBeach.position.set(-1100, 2.5, 900);
       belizePortGroup.add(belizeBeach);
 
       // The Great Belize Barrier Reef & Coral Cays (5km offshore to the East)
@@ -3328,44 +3328,44 @@
 
       // Historic Baron Bliss Lighthouse on Fort Point (55m tall)
       const blBase = new THREE.Mesh(new THREE.CylinderGeometry(14, 18, 14, 16), terminalFacadeMat);
-      blBase.position.set(-180, 10, 650);
+      blBase.position.set(-620, 10, 650);
       belizePortGroup.add(blBase);
 
       const blTower1 = new THREE.Mesh(new THREE.CylinderGeometry(10, 14, 24, 16), lighthouseRedMat);
-      blTower1.position.set(-180, 28, 650);
+      blTower1.position.set(-620, 28, 650);
       belizePortGroup.add(blTower1);
 
       const blTower2 = new THREE.Mesh(new THREE.CylinderGeometry(8, 10, 20, 16), terminalFacadeMat);
-      blTower2.position.set(-180, 48, 650);
+      blTower2.position.set(-620, 48, 650);
       belizePortGroup.add(blTower2);
 
       const blLantern = new THREE.Mesh(new THREE.CylinderGeometry(7, 8, 12, 16), glassWindowMat);
-      blLantern.position.set(-180, 62, 650);
+      blLantern.position.set(-620, 62, 650);
       belizePortGroup.add(blLantern);
 
-      // Fort Street Tourism Village
+      // Fort Street Tourism Village (Located safely on Fort Point shore)
       const villageColors = [caribAquaMat, caribYellowMat, caribCoralMat, terminalFacadeMat];
       for (let i = 0; i < 12; i++) {
         const house = new THREE.Mesh(new THREE.BoxGeometry(55, 28, 40), villageColors[i % 4]);
-        house.position.set(-350 + (i % 4) * 85, 18, 850 + Math.floor(i / 4) * 85);
+        house.position.set(-850 + (i % 4) * 85, 18, 850 + Math.floor(i / 4) * 85);
         belizePortGroup.add(house);
 
         const roof = new THREE.Mesh(new THREE.ConeGeometry(42, 16, 4), caribCoralMat);
-        roof.position.set(-350 + (i % 4) * 85, 38, 850 + Math.floor(i / 4) * 85);
+        roof.position.set(-850 + (i % 4) * 85, 38, 850 + Math.floor(i / 4) * 85);
         roof.rotation.y = Math.PI / 4;
         belizePortGroup.add(roof);
       }
 
-      // Tender Pier & Catamarans
+      // Tender Pier & Catamarans (Extending east from Fort Point into the bay)
       const belizeTenderPier = new THREE.Mesh(new THREE.BoxGeometry(45, 6, 350), woodDeckMat);
-      belizeTenderPier.position.set(0, 3, 500);
+      belizeTenderPier.position.set(-480, 3, 500);
       belizePortGroup.add(belizeTenderPier);
 
       for (let i = 0; i < 4; i++) {
         const tenderBoat = new THREE.Mesh(new THREE.BoxGeometry(22, 8, 48), terminalFacadeMat);
-        tenderBoat.position.set(-90 + i * 65, 3, 300);
+        tenderBoat.position.set(-560 + i * 65, 3, 300);
         belizePortGroup.add(tenderBoat);
-        addPalmTree(belizePortGroup, -250 + i * 140, 10, 750, 2.2);
+        addPalmTree(belizePortGroup, -750 + i * 140, 10, 750, 2.2);
       }
       portsGroup.add(belizePortGroup);
 
@@ -6173,8 +6173,8 @@
         { minX: -5580, maxX: -5420, minZ: 340, maxZ: 420, desc: "Skyway South Tower & Dolphins" },
 
         // --- 2. Belize City Area (Origin: -31572, 57481) ---
-        // Belize Mainland Coast (West of city)
-        { minX: -31572 - 8000, maxX: -31572 - 350, minZ: 57481 - 4000, maxZ: 57481 + 4000, desc: "Belize Mainland" },
+        // Belize Mainland Coast (West of city, X <= -500)
+        { minX: -31572 - 8000, maxX: -31572 - 500, minZ: 57481 - 4000, maxZ: 57481 + 4000, desc: "Belize Mainland" },
         // Great Barrier Reef & Cays (Far East offshore)
         { minX: -31572 + 3900, maxX: -31572 + 5200, minZ: 57481 - 6000, maxZ: 57481 + 6000, desc: "Belize Barrier Reef" },
 
