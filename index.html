@@ -1993,8 +1993,34 @@
 
       let isFollowMode = false;
       let autoRotate = false;
+      let is360Panning = false;
+      let panAzimuth = 0;
+      let panElevation = 0.38;
+      const TARGET_ELEVATION_RATIO = 0.60;
       let userInteracting = false;
       let userInteractTimeout = null;
+
+      function start360Pan() {
+        if (typeof keysPressed !== "undefined" && Object.values(keysPressed).some(Boolean)) return;
+        is360Panning = true;
+        isFollowMode = false;
+        userInteracting = false;
+
+        const shipCenter = shipGroup.position.clone().add(new THREE.Vector3(0, 22, 0));
+        const rel = camera.position.clone().sub(shipCenter);
+        panAzimuth = Math.atan2(rel.z, rel.x);
+        panElevation = Math.max(0.2, rel.y / Math.max(80, currentCamDistance));
+
+        if (typeof btnCamMode !== "undefined" && btnCamMode) {
+          btnCamMode.textContent = "🔄 (C)amera: 360 Pan";
+          btnCamMode.classList.remove("active");
+        }
+        if (typeof btnRotate !== "undefined" && btnRotate) {
+          btnRotate.classList.add("active");
+        }
+        autoRotate = false;
+        controls.autoRotate = false;
+      }
 
       controls.autoRotate = false;
       controls.autoRotateSpeed = 0.42; // Slow, majestic cinematic panoramic pan
@@ -2015,10 +2041,7 @@
         userInteractTimeout = setTimeout(() => {
           userInteracting = false;
           if (!isFollowMode) {
-            autoRotate = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.42;
-            if (btnRotate) btnRotate.classList.add("active");
+            start360Pan();
           }
         }, 5000);
       });
@@ -2032,10 +2055,7 @@
         userInteractTimeout = setTimeout(() => {
           userInteracting = false;
           if (!isFollowMode) {
-            autoRotate = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.42;
-            if (btnRotate) btnRotate.classList.add("active");
+            start360Pan();
           }
         }, 5000);
 
@@ -4281,22 +4301,8 @@
         const anyKeyDown = Object.values(keysPressed).some(Boolean);
         if (!anyKeyDown) {
           keyIdleTimeout = setTimeout(() => {
-            // 5 seconds after no navigation input -> switch to Free Orbit and Auto-Rotate mode
-            if (typeof setCameraMode === "function") {
-              setCameraMode(0); // Free Orbit
-            } else {
-              isFollowMode = false;
-              if (btnCamMode) {
-                btnCamMode.textContent = "🌐 (C)amera: Orbit";
-                btnCamMode.classList.remove("active");
-              }
-            }
-
-            autoRotate = true;
-            controls.autoRotate = true;
-            controls.autoRotateSpeed = 0.42;
-            if (btnRotate) btnRotate.classList.add("active");
-            userInteracting = false;
+            // 5 seconds after stopping arrow/navigation keys -> smooth 360 pan from higher angle
+            start360Pan();
           }, 5000);
         }
       }
@@ -4305,27 +4311,29 @@
         if (keysPressed.hasOwnProperty(e.code)) {
           keysPressed[e.code] = true;
           userInteracting = false;
+          is360Panning = false;
           resetKeyIdleTimer();
 
-          // When driving the ship with navigation keys, switch to Follow Mode and pause Auto-Rotate
-          if (!isFollowMode || autoRotate) {
-            isFollowMode = true;
-            if (btnCamMode) {
-              btnCamMode.textContent = "🎥 (C)amera: Follow";
-              btnCamMode.classList.add("active");
-            }
-
-            autoRotate = false;
-            controls.autoRotate = false;
-            if (btnRotate) btnRotate.classList.remove("active");
+          // When driving the ship with navigation keys, switch to Follow Mode and pause Auto-Rotate / 360 Pan
+          isFollowMode = true;
+          if (btnCamMode) {
+            btnCamMode.textContent = "🎥 (C)amera: Follow";
+            btnCamMode.classList.add("active");
           }
+
+          autoRotate = false;
+          controls.autoRotate = false;
+          if (btnRotate) btnRotate.classList.remove("active");
         }
       });
 
       window.addEventListener("keyup", (e) => {
         if (keysPressed.hasOwnProperty(e.code)) {
           keysPressed[e.code] = false;
-          startKeyIdleTimer();
+          const anyKeyDown = Object.values(keysPressed).some(Boolean);
+          if (!anyKeyDown) {
+            startKeyIdleTimer();
+          }
         }
       });
 
@@ -6157,7 +6165,7 @@
         } else if (code === "KeyR" || key === "r") {
           if (typeof rosterModal !== "undefined" && rosterModal.classList.contains("active")) closeRoster();
           else openRoster();
-        } else if (code === "KeyT" || key === "t" || code === "KeyA" || key === "a") {
+        } else if (code === "KeyT" || key === "t") {
           if (btnAtmo) btnAtmo.click();
         } else if (code === "KeyO" || key === "o") {
           if (btnRotate) btnRotate.click();
@@ -6178,15 +6186,7 @@
           btnFireworksText.textContent = "Stop Show";
           btnNextSong.classList.add("visible");
 
-          isFollowMode = false;
-          btnCamMode.textContent = "🌐 Free Orbit";
-          btnCamMode.classList.remove("active");
-
-          autoRotate = true;
-          controls.autoRotate = true;
-          controls.autoRotateSpeed = 0.42;
-          btnRotate.classList.add("active");
-          userInteracting = false;
+          start360Pan();
 
           audioEngine.startRandomSong();
           launchGrandBarrage(5);
@@ -6426,14 +6426,14 @@
         btnCamMode.textContent = mode.name;
 
         if (mode.id === "orbit") {
-          isFollowMode = false;
-          btnCamMode.classList.remove("active");
+          start360Pan();
         } else {
+          is360Panning = false;
           isFollowMode = true;
           btnCamMode.classList.add("active");
           autoRotate = false;
           controls.autoRotate = false;
-          btnRotate.classList.remove("active");
+          if (btnRotate) btnRotate.classList.remove("active");
           userInteracting = false;
         }
       }
@@ -6443,10 +6443,12 @@
       });
 
       btnRotate.addEventListener("click", () => {
-        autoRotate = !autoRotate;
-        controls.autoRotate = autoRotate;
-        controls.autoRotateSpeed = 0.42;
-        btnRotate.classList.toggle("active", autoRotate);
+        if (is360Panning) {
+          is360Panning = false;
+          if (btnRotate) btnRotate.classList.remove("active");
+        } else {
+          start360Pan();
+        }
       });
 
       // 5. Emergency Engine Stop Action ([X] Stop Engines)
@@ -7863,8 +7865,30 @@
 
         const shipCenter = shipGroup.position.clone().add(new THREE.Vector3(0, 22, 0));
 
-        if (isFollowMode && !userInteracting) {
-          const modeId = CAMERA_MODES[currentCamIdx].id;
+        if (is360Panning && !userInteracting) {
+          // Smooth 360 pan around the boat from an elevated angle
+          const panSpeed = 0.22; // ~28.5s full 360-degree rotation (gentle, majestic)
+          panAzimuth += panSpeed * dt;
+
+          // Smoothly elevate to the higher angle (target height ratio ~0.60 vs follow's 0.38)
+          panElevation = THREE.MathUtils.lerp(panElevation, TARGET_ELEVATION_RATIO, 1.6 * dt);
+
+          const radius = currentCamDistance;
+          const targetH = radius * panElevation;
+          const targetHorizR = radius * Math.cos(Math.asin(Math.min(0.85, panElevation)));
+
+          const desiredCamPos = new THREE.Vector3(
+            shipCenter.x + targetHorizR * Math.cos(panAzimuth),
+            shipCenter.y + targetH,
+            shipCenter.z + targetHorizR * Math.sin(panAzimuth)
+          );
+
+          // Smooth follow tracking centered on ship
+          const followFactor = 1.0 - Math.exp(-5.0 * dt);
+          camera.position.lerp(desiredCamPos, followFactor);
+          controls.target.lerp(shipCenter, followFactor);
+        } else if (isFollowMode && !userInteracting) {
+          const modeId = (typeof CAMERA_MODES !== "undefined" && CAMERA_MODES[currentCamIdx]) ? CAMERA_MODES[currentCamIdx].id : "follow";
           let desiredCamPos, desiredTarget;
 
           if (modeId === "bridge") {
@@ -8507,6 +8531,7 @@
       });
 
       animate();
+      startKeyIdleTimer();
     </script>
   </body>
 </html>
